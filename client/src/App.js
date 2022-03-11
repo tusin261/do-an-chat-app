@@ -1,9 +1,8 @@
-import React from 'react';
-
+import LoginForm from './pages/loginForm';
+import SignUpForm from './pages/signUpForm';
 function App() {
   return (
-    
-   <h1>hello</h1>
+    return <SignUpForm />
   );
 }
 
