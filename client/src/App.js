@@ -1,11 +1,8 @@
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css'
-import { Button } from 'react-bootstrap';
-
+import LoginForm from './pages/loginForm';
+import SignUpForm from './pages/signUpForm';
 function App() {
   return (
-    
-    <Button>ha</Button>
+    return <SignUpForm />
   );
 }
 
