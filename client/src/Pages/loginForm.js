@@ -1,8 +1,41 @@
 import React from 'react';
+import {Link} from 'react-router-dom'
+import {Container,Button,Row,Col,Form} from 'react-bootstrap'
+const LoginForm = () => {
+  return (
+    <Container>
+      <h1>Login</h1>
+      <Row>
+        <Col lg={8}>
+          <Form>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Label>Email address</Form.Label>
+              <Form.Control type="email" placeholder="Enter email" />              
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Label>Password</Form.Label>
+              <Form.Control type="password" placeholder="Password" />
+            </Form.Group>
+            
+            <Button variant="primary" type="submit">
+              Submit
+            </Button>
+            <Button >
+              <Link to="/register" className="text-danger">Register</Link>
+            </Button>
+        </Form>
+        </Col>
+      </Row>
+    </Container>
+    
+  )
+}
 
-class LoginForm extends React.Component {
-    render() { return <div className="container" id="container">
-    <div className="form-container sign-in-container">
+
+
+export default LoginForm;
+
+{/* <div className="form-container sign-in-container">
       <form action="#">
         <h1>Sign in</h1>
        
@@ -26,10 +59,4 @@ class LoginForm extends React.Component {
           <button className="ghost" >Sign Up</button>
         </div>
       </div>
-    </div>
-  </div>
-  
-  ; }
-}
-
-export default LoginForm;
+    </div> */}

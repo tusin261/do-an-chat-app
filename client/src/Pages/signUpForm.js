@@ -1,33 +1,46 @@
 import React, { Component } from 'react';
+import {Link} from 'react-router-dom'
+import {Container,Button,Row,Col,Form} from 'react-bootstrap'
 
 class SignUpForm extends Component {
     render() {
         return (
-            <div className="container" id="container">
-                <div className="form-container sign-in-container">
-                    <form action="#">
-                        <h1>Create Account</h1>
-                        
-                        <span>or use your email for registration</span>
-                        <input type="text" placeholder="Họ" />
-                        <input type="text" placeholder="Tên" />
-                        <input type="tel" placeholder="Số Điện thoại" />
-                        <input type="email" placeholder="Email" />
-                        <input type="password" placeholder="Password" />
-                        <button>Sign Up</button>
-                    </form>
-                </div>
-                <div className="overlay-container">
-                    <div className="overlay">
-                        <div className="overlay-panel overlay-right">
-                            <h1>Welcome Back!</h1>
-                            <p>To keep connected with us please login with your personal info</p>
-                            <button className="ghost" href="youtube.com">Sign In</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <Container>
+      <h1>Register</h1>
+      <Row>
+        <Col lg={8}>
+          <Form>
+          <Form.Group className="mb-3">
+              <Form.Label>Ho</Form.Label>
+              <Form.Control type="text" placeholder="Enter Ho" />              
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Ten</Form.Label>
+              <Form.Control type="text" placeholder="Enter ten" />              
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email address</Form.Label>
+              <Form.Control type="email" placeholder="Enter email" />              
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control type="password" placeholder="Password" />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password lan 2</Form.Label>
+              <Form.Control type="password" placeholder="Password 2" />
+            </Form.Group>
+            
+            <Button variant="primary" type="submit">
+              Register
+            </Button>
+            <Button >
+              <Link to="/" className="text-danger">Login</Link>
+            </Button>
+        </Form>
+        </Col>
+      </Row>
+    </Container>
         );
     }
 }
