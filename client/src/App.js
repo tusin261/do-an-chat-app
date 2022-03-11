@@ -1,6 +1,6 @@
 import {Routes,Route} from 'react-router-dom'
-import LoginForm from './Pages/LoginForm';
-import SignUpForm from './Pages/SignUpForm';
+import LoginForm from './Pages/loginForm';
+import SignUpForm from './Pages/signUpForm';
 import Chat from './Pages/Chat'
 function App() {
   return (
