@@ -5,11 +5,12 @@ import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 import {loginCall} from '../ApiCall';
 import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/hooks";
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [state,dispatch] = useContext(AuthContext);
+  const [state,dispatch] = useAuth();
 
   const {user,isError,isLoading} = state;
   let navigate = useNavigate();
