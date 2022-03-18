@@ -18,15 +18,9 @@ const LoginForm = () => {
   const handleClick = async (e) => {
     e.preventDefault();
     await loginCall({ email, password }, dispatch)
-
-    console.log('CLick')
-    if (user.isAdmin) {
-      path = '/admin';
-      navigate(path);
-    } else {
       path = '/chat';
       navigate(path);
-    }
+    
 
   }
 
