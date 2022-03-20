@@ -38,8 +38,7 @@ module.exports.updateAvatar = async (req, res) => {
     }
 }
 module.exports.search = async (req, res) => {
-    const keyword = req.query.search;
-    const users = await user_model.find({email:keyword});
-    console.log(users);
+    const keyword = req.query.q;
+    const users = await user_model.find({first_name:{$regex: new RegExp('^'+keyword+'.','i')}});
     res.status(200).json(users);
 }
