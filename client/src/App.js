@@ -6,25 +6,27 @@ import { useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
 import Admin from './Pages/Admin';
 import ProtectedRoute from './ProtectedRouter';
+import ChatUI from './Pages/chatUI';
 
 function App() {
 
   return (
-    <Routes>
-      <Route path="/" element={<LoginForm />}></Route>
-      <Route path="/register" element={<SignUpForm />}></Route>
+    // <Routes>
+    //   <Route path="/" element={<LoginForm />}></Route>
+    //   <Route path="/register" element={<SignUpForm />}></Route>
       
-      <Route path="/chat" element={
-        <ProtectedRoute roleAdmin={false}>
-          <Chat />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin" element={
-        <ProtectedRoute roleAdmin={true} >
-          <Admin />
-        </ProtectedRoute>} />
+    //   <Route path="/chat" element={
+    //     <ProtectedRoute roleAdmin={false}>
+    //       <Chat />
+    //     </ProtectedRoute>
+    //   } />
+    //   <Route path="/admin" element={
+    //     <ProtectedRoute roleAdmin={true} >
+    //       <Admin />
+    //     </ProtectedRoute>} />
 
-    </Routes>
+    // </Routes>
+    <ChatUI />
   );
 }
 
