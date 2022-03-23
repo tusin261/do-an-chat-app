@@ -1,9 +1,8 @@
 import React, { useContext } from 'react'
-import { AuthContext } from '../context/AuthContext'
+import useAuth, { AuthContext } from '../context/AuthContext'
 
 const Chat = () => {
-  const [state,dispatch] = useContext(AuthContext);
-  const {user} = state;
+  const {user} = useAuth();
   return (
     <div>
       <h1 className='text-primary'>Chat</h1>

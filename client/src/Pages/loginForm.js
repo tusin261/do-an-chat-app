@@ -10,18 +10,19 @@ import { useAuth } from "../context/hooks";
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [state, dispatch] = useAuth();
-
-  const { user, isError, isLoading } = state;
+  const {user,isLoading,isError,dispatch} = useAuth();
   let navigate = useNavigate();
   let path;
   const handleClick = async (e) => {
     e.preventDefault();
-    await loginCall({ email, password }, dispatch)
+    await loginCall({ email, password }, dispatch);
+    if (user.isAdmin) {
+      path = '/admin';
+      navigate(path);
+    } else {
       path = '/chat';
       navigate(path);
-    
-
+    }
   }
 
   return (

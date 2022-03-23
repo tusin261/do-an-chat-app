@@ -2,8 +2,8 @@ import { useAuth } from "./context/hooks";
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 const ProtectedRoute = ({roleAdmin,children})=>{
-    const [state, dispatch] = useAuth();
-    const {user} = state;
+    const {user} = useAuth();
+   
     if(!user){
         return <Navigate to='/' replace /> 
     }

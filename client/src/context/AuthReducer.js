@@ -1,25 +1,39 @@
 const AuthReducer = (state, action) => {
     switch (action.type) {
         case 'LOGIN_START':
+            console.log('Login start');
             return {
-                isLoading:true,
-                user:null,
-                isError:false
+                ...state,
+                isLoading: true,
+                user: null,
+                isError: false
             }
         case 'LOGIN_SUCCESS':
+            console.log('Login success', action.payload);
             return {
-                isLoading:false,
-                user:action.payload,
-                isError:false
+                ...state,
+                isLoading: false,
+                user: action.payload,
+                isError: false
             }
         case 'LOGIN_FAIL':
+            console.log('Login fail', action.payload);
             return {
-                isLoading:false,
-                user:null,
-                isError:action.payload
+                ...state,
+                isLoading: false,
+                user: null,
+                isError: action.payload
+            }
+        case 'LOGOUT':
+            console.log('Logout');
+            return {
+                ...state,
+                isLoading: false,
+                user: null,
+                isError: false
             }
         default:
             return state;
     }
 }
-export default AuthReducer;
+export default AuthReducer
