@@ -23,6 +23,16 @@ mongoose.connect(process.env.MONGO_URL)
         console.log(err);
     });
 
-app.listen(PORT,()=>{
+const server = app.listen(PORT,()=>{
     console.log('Server is running ...',);
+});
+//sau 60s k hoat dong thi dong ket noi
+const io = require('socket.io')(server,{
+    pingTimeout: 60000,
+    cors:{
+        origin:"http://localhost:3000",
+    }
+});
+io.on('connection',(socket)=>{
+    console.log('connected socket io ' +socket.id);
 })

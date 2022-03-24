@@ -16,13 +16,15 @@ const LoginForm = () => {
   const handleClick = async (e) => {
     e.preventDefault();
     await loginCall({ email, password }, dispatch);
-    if (user.isAdmin) {
-      path = '/admin';
-      navigate(path);
-    } else {
-      path = '/chat';
-      navigate(path);
-    }
+    path = '/chat';
+    navigate(path);
+    // if (user.isAdmin) {
+    //   path = '/admin';
+    //   navigate(path);
+    // } else {
+    //   path = '/chat';
+    //   navigate(path);
+    // }
   }
 
   return (

@@ -1,4 +1,4 @@
-import {createContext,useContext,useReducer} from 'react'
+import { createContext, useContext, useReducer, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AuthReducer from '../context/AuthReducer';
 
@@ -22,18 +22,26 @@ if (userFromLocalStorage) {
 }
 
 export const AuthContext = createContext(INITIAL_STATE);
-export const AuthContextProvider = ({children})=>{
-    const [state,dispatch] = useReducer(AuthReducer,INITIAL_STATE);
-
+export const AuthContextProvider = ({ children }) => {
+    const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
+    const [selectedChat, setSelectedChat] = useState();
+    const [notification, setNotification] = useState([]);
+    const [chats, setChats] = useState();
     const value = {
         user: state.user,
         isLoading: state.isLoading,
         isError: state.isError,
-        dispatch
+        dispatch,
+        selectedChat,
+        setSelectedChat,
+        notification,
+        setNotification,
+        chats,
+        setChats
     }
     return (
         <AuthContext.Provider value={value}>
-            {children}            
+            {children}
         </AuthContext.Provider>
     )
 }

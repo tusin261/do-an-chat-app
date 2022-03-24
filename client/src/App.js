@@ -6,7 +6,6 @@ import ProtectedRoute from './ProtectedRouter';
 import Chat from './Pages/Chat'
 import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar';
-import Chit from './Pages/Chit';
 import Message from './components/Message';
 function App() {
 
@@ -24,10 +23,10 @@ function App() {
         <ProtectedRoute roleAdmin={true} >
           <Admin />
         </ProtectedRoute>} />
-        <Route path="/topbar" element={<Topbar />}></Route>
+        {/* <Route path="/topbar" element={<Topbar />}></Route>
         <Route path="/sidebar" element={<Sidebar />}></Route>
         <Route path="/chit" element={<Chit />}></Route>
-        <Route path="/message" element={<Message />}></Route>
+        <Route path="/message" element={<Message />}></Route> */}
     </Routes>
     
   );
