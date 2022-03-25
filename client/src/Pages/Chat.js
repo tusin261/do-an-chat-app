@@ -3,7 +3,7 @@ import Message from '../components/Message';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import useAuth, { AuthContext } from '../context/AuthContext'
-
+import "../components/Chat.css";
 const Chat = () => {
   const {user} = useAuth();
   return (
