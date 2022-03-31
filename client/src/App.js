@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import './components/FontAwesomeIcons'
 import LoginForm from './Pages/loginForm';
 import SignUpForm from './Pages/signUpForm';
 import Admin from './Pages/Admin';
@@ -23,10 +24,9 @@ function App() {
         <ProtectedRoute roleAdmin={true} >
           <Admin />
         </ProtectedRoute>} />
-        {/* <Route path="/topbar" element={<Topbar />}></Route>
+        <Route path="/topbar" element={<Topbar />}></Route>
         <Route path="/sidebar" element={<Sidebar />}></Route>
-        <Route path="/chit" element={<Chit />}></Route>
-        <Route path="/message" element={<Message />}></Route> */}
+        <Route path="/message" element={<Message />}></Route>
     </Routes>
     
   );

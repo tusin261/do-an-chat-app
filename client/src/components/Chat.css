@@ -2,3 +2,7 @@
     width: 100%;
     height: 450px;
 }
+.dropdown-menu-end {
+    right: 0;
+    left: auto;
+  }

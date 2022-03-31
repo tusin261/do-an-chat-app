@@ -1,6 +1,7 @@
 const Message = require('../models/messageModel');
 const User = require('../models/userModel');
 const Conversation = require('../models/conversationModel');
+
 module.exports.sendMessage = async (req,res)=>{
     const {content,conversation_id,type} = req.body;
 
@@ -25,5 +26,16 @@ module.exports.sendMessage = async (req,res)=>{
         res.json(message); 
     } catch (error) {
         console.log(error);
+    }
+}
+
+module.exports.getAllMessage = async (req,res)=>{
+    try {
+        const messages = await Message.find({conversation_id:req.params.conversationId})
+                .populate("sender_id","first_name last_name image_url email")
+                .populate('conversation_id');
+        res.status(200).json(messages);
+    } catch (error) {
+        res.status(500).json(error);
     }
 }

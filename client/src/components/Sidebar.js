@@ -3,9 +3,10 @@ import BoxConversation from './BoxConversation'
 import axios from 'axios'
 import useAuth from '../context/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({setMess,setSelectedConversation}) => {
   const { user } = useAuth();
   const [conversation, setConversation] = useState([]);
+  const [currentChat, setCurrentChat] = useState(null);
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -24,14 +25,32 @@ const Sidebar = () => {
     } catch (error) {
       console.log(error);
     }
-
   },[]);
+
+  useEffect(()=>{
+    if(currentChat){
+      try {
+        const getMessage = async ()=>{
+          const rs = await axios.get(`/api/messages/${currentChat._id}`, config);
+          setMess(rs.data);
+          setSelectedConversation(currentChat);
+        }
+        getMessage();
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  },[currentChat]);
+
+
 
   return (
     <div className='col-lg-12'>
       <div className='list-group'>
         {conversation.map(c=>(
-          <BoxConversation con={c} key={c._id}/>
+          <div key={c._id} onClick={() => setCurrentChat(c)}>
+            <BoxConversation con={c} />
+          </div>
         ))}
       </div>
     </div>
