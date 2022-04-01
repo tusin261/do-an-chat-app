@@ -1,13 +1,20 @@
 const { v4: uuid } = require('uuid');
 const AWS = require('aws-sdk');
-const user_model = require('../models/userModel');
+const user_model = require("../models/userModel");
+const jwt = require('jsonwebtoken');    
+
 AWS.config.update({
     accessKeyId: process.env.ACCESS_KEY_ID,
     secretAccessKey: process.env.SECRET_KEY_ID,
     region: process.env.REGION
 });
+const s3 = new AWS.S3({
+    accessKeyId:process.env.ACCESS_KEY_ID,
+    secretAccessKey:process.env.SECRET_KEY_ID
+});
+
+const CLOUD_FONT_URL = 'https://d3pgq3xdjygd77.cloudfront.net/';
 module.exports.updateAvatar = async (req, res) => {
-    const { userId } = req.body;
     if (req.file) {
         const image = req.file.originalname.split('.');
         const fileType = image[image.length - 1];
@@ -18,27 +25,35 @@ module.exports.updateAvatar = async (req, res) => {
             Key: filePath,
             Body: req.file.buffer
         }
-        s3.upload(params, (err, data) => {
+        s3.upload(params, async (err, data) => {
             if (err) {
                 res.status(500).json(error);
             }
             else {
-                user_model.findOneAndUpdate({ _id: userId }, { $set: { image_url: `${CLOUD_FONT_URL}${filePath}` } }, (err, data1) => {
+                const user = await user_model.findOne({_id:req.user.id});
+                const accessToken = jwt.sign({
+                    id:user._id,
+                    isAdmin:user.isAdmin
+                },process.env.SECRET,{expiresIn:"1d"});
+                user_model.findOneAndUpdate({
+                    _id: req.user.id
+                }, { $set: { image_url: `${CLOUD_FONT_URL}${filePath}` } },{new: true}, (err, data1) => {
                     if (err) {
                         res.status(500).json(error);
                     } else {
-                        return res.status(200).json({ message: "Đổi ảnh đại diện thành công" });
+                        const {password,...rest}=data1._doc; 
+                        return res.status(200).json({...rest,accessToken});
                     }
                 });
             }
         });
 
     } else {
-        res.send({ tbfile: "Phải chọn ảnh để đổi ảnh đại diện" });
+        return res.status(500).json({message:"Không có file nào được chọn"});
     }
 }
 module.exports.search = async (req, res) => {
     const keyword = req.query.q;
-    const users = await user_model.find({first_name:{$regex: new RegExp('^'+keyword+'.','i')}});
+    const users = await user_model.find({ first_name: { $regex: new RegExp('^' + keyword + '.', 'i') } });
     res.status(200).json(users);
 }

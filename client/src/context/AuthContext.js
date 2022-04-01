@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import AuthReducer from '../context/AuthReducer';
 
 
-
 const userFromLocalStorage = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
 let INITIAL_STATE;
 
@@ -21,23 +20,16 @@ if (userFromLocalStorage) {
     }
 }
 
+
 export const AuthContext = createContext(INITIAL_STATE);
 export const AuthContextProvider = ({ children }) => {
     const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
-    const [selectedChat, setSelectedChat] = useState();
-    const [notification, setNotification] = useState([]);
-    const [chats, setChats] = useState();
+    
     const value = {
         user: state.user,
         isLoading: state.isLoading,
         isError: state.isError,
         dispatch,
-        selectedChat,
-        setSelectedChat,
-        notification,
-        setNotification,
-        chats,
-        setChats
     }
     return (
         <AuthContext.Provider value={value}>

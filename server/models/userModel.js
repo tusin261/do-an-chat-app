@@ -26,8 +26,7 @@ const userSchema = mongoose.Schema({
         type:Boolean,
     },
     image_url:{
-        type:String,
-        default:"aaa"
+        type:String
     },
     sent_request:{
         type:Array
