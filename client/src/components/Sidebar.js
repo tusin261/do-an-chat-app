@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import BoxConversation from './BoxConversation'
 import axios from 'axios'
 import useAuth from '../context/AuthContext';
+import Search from './Search';
 
 const Sidebar = ({setMess,setSelectedConversation}) => {
   const { user } = useAuth();
@@ -46,10 +47,14 @@ const Sidebar = ({setMess,setSelectedConversation}) => {
 
   return (
     <div className='col-lg-12'>
+      
+      <Search />
+      
       <div className='list-group'>
         {conversation.map(c=>(
           <div key={c._id} onClick={() => setCurrentChat(c)}>
             <BoxConversation con={c} />
+            
           </div>
         ))}
       </div>
