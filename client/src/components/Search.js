@@ -1,10 +1,11 @@
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import useAuth from '../context/AuthContext';
 
-const Search = () => {
+const Search = ({setConversation,conversation,setSelectedConversation}) => {
     const { user } = useAuth();
     const [listResult, setListResult] = useState([]);
+    const inputSearch = useRef();
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -22,14 +23,34 @@ const Search = () => {
         }
     }
 
-    return (
+    const handleClick = async (item)=>{
+        const user2_id = item._id;
+        try {
+            const rs = await axios.post("/api/chats",{
+                userId:user2_id
+            },config);
+            const newConversation = conversation.find(e=>e._id === rs.data._id);
+            if(newConversation){
+                setSelectedConversation(newConversation);
+            }else{
+                setConversation((conversation)=>[...conversation,rs.data]);
+            }
+            setListResult([]);
+            inputSearch.current.value = '';
+            
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
-        <div className="mb-3 mt-3 position-relative">
-            <input type="text" className="form-control" onChange={handleChange} />
+
+    return (
+        <div className="mb-3 mt-2 position-relative">
+            <input type="text" className="form-control" ref={inputSearch} onChange={handleChange} />
             <div className='w-100 position-absolute'>
                 <ul className="list-group">
                     {listResult.length > 0 && listResult.map((item, index) => (
-                        <li className="list-group-item" key={index}>
+                        <li className="list-group-item" key={index} onClick={()=>handleClick(item)}>
                             <div className="d-flex w-100 align-items-center">
                                 <img width="64" height="64" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
                                 <div className='ms-3'>

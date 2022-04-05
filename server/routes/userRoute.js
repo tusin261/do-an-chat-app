@@ -32,6 +32,6 @@ const upload = multer({
 });
 
 router.post("/updateAvatar",verifyTokenAndAuthorization,upload.single('image'),userController.updateAvatar);
-router.get("/",userController.search);
+router.get("/",verifyTokenAndAuthorization,userController.search);
 
 module.exports = router;

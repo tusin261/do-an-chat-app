@@ -57,8 +57,9 @@ module.exports.search = async (req, res) => {
     if(keyword == ''){
         return res.status(200).json([]);
     }
-    const users = await user_model.find({ first_name: { $regex: new RegExp('^' + keyword + '.', 'i') } });
-    const result2 = await user_model.find({ first_name:keyword});
+    const users = await user_model.find({ first_name: { $regex: new RegExp('^' + keyword + '.', 'i') } })
+        .find({_id:{$ne:req.user.id}}).find({isAdmin:false});
+    const result2 = await user_model.find({ first_name:keyword}).find({_id:{$ne:req.user.id}}).find({isAdmin:false});
     if(users.length > 0){
         return res.status(200).json(users);
     }else{
@@ -67,7 +68,6 @@ module.exports.search = async (req, res) => {
         }else{
             return res.status(200).json([]);
         }
-        
     }
    
     

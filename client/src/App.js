@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import './components/FontAwesomeIcons'
 import LoginForm from './Pages/loginForm';
 import SignUpForm from './Pages/signUpForm';
 import Admin from './Pages/Admin';

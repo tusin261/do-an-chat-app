@@ -9,17 +9,17 @@ const BoxConversation = ({con}) => {
   return (
     <div className='col-lg-12 p-2'>
       <div className="d-flex w-100 justify-content-between align-items-center">
-        <img width="64" height="64" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
-        <div className='w-50 overflow-hidden mh-80'>
+        <img width="32" height="32" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
+        <div className='w-50 overflow-hidden mh-60'>
           <p>{!con.isGroupChat?getNameConversation(user,con):con.chat_name}</p>
-          <p>{con.latestMessage?con.latestMessage.content:''}</p>
+          <p className='mb-0'>{con.latestMessage?con.latestMessage.content:''}</p>
         </div>
         <div className='d-flex flex-column align-items-end'>
           <div>
             <p>09:00</p>  
           </div>
           <div>
-            <p>1</p>
+            <p className='mb-0'>1</p>
           </div>
         </div>
       </div>

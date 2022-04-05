@@ -14,27 +14,60 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 app.use(cors());
-app.use('/api/users',userRoute);
-app.use('/api/auth',authRoute);
-app.use('/api/chats',chatRoute);
-app.use('/api/messages',messageRoute);
+app.use('/api/users', userRoute);
+app.use('/api/auth', authRoute);
+app.use('/api/chats', chatRoute);
+app.use('/api/messages', messageRoute);
 mongoose.connect(process.env.MONGO_URL)
-    .then(()=>{
+    .then(() => {
         console.log('Connect successful');
-    }).catch(err=>{
+    }).catch(err => {
         console.log(err);
     });
 
-const server = app.listen(PORT,()=>{
+const server = app.listen(PORT, () => {
     console.log('Server is running ...',);
 });
 //sau 60s k hoat dong thi dong ket noi
-const io = require('socket.io')(server,{
+const io = require('socket.io')(server, {
     pingTimeout: 60000,
-    cors:{
-        origin:"http://localhost:3000",
+    cors: {
+        origin: "http://localhost:3000",
     }
 });
-io.on('connection',(socket)=>{
-    console.log('connected socket io ' +socket.id);
+let users = [];
+const addUser = (userId, socketId) => {
+    !users.some((user) => user.userId === userId) &&
+        users.push({ userId, socketId });
+};
+
+const removeUser = (socketId) => {
+    users = users.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (userId) => {
+    return users.find((user) => user.userId === userId);
+};
+io.on('connection', (socket) => {
+    console.log('connected socket io ' + socket.id);
+    socket.on('addUser', (data) => {
+        addUser(data._id, socket.id);
+        io.emit("getUsers", users);
+    })
+    socket.on('join chat', (room) => { 
+        socket.join(room._id);
+        console.log("User join " + room._id);
+        //io.to(room._id).emit("eve","Hello room");
+    });
+    socket.on('send message',(newMessage)=>{
+        const conversationId = newMessage.conversation_id._id;
+        socket.to(conversationId).emit("new message",newMessage);
+    })
+    
+    socket.on("disconnect", () => {
+        console.log("a user disconnected!");
+        removeUser(socket.id);
+        io.emit("getUsers", users);
+      });
+
 })

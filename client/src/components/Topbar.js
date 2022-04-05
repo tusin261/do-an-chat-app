@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import useAuth from '../context/AuthContext';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import "../components/Chat.css";
 import { BaseURL } from '../constants/path_constant';
 import axios from 'axios';
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 const Topbar = () => {
   const { user,dispatch } = useAuth();
   const imageURL = BaseURL.PUBLIC_FOLDER_IMAGE;
@@ -65,7 +65,7 @@ const Topbar = () => {
       <a href='#' className='navbar-brand'>Test</a>
       <div className='collapse navbar-collapse '>
         <ul className='navbar-nav ms-auto d-flex col-1 justify-content-between align-items-center'>
-          <li className='nav-item'><a className='nav-link' href='#'><FontAwesomeIcon icon={['fas', 'bell']} size="xl" /></a></li>
+          <li className='nav-item'><a className='nav-link' href='#'><NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} /></a></li>
           <li className='nav-item'>
             <img id="imageDropdown" data-bs-toggle="dropdown" width="32" height="32" className='rounded-circle' alt="100x100" src={user.image_url ? user.image_url : imageURL + "userDefault.png"} />
             <div className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">

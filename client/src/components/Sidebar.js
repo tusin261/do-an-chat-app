@@ -3,11 +3,10 @@ import BoxConversation from './BoxConversation'
 import axios from 'axios'
 import useAuth from '../context/AuthContext';
 import Search from './Search';
-
-const Sidebar = ({setMess,setSelectedConversation}) => {
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+const Sidebar = ({setSelectedConversation}) => {
   const { user } = useAuth();
   const [conversation, setConversation] = useState([]);
-  const [currentChat, setCurrentChat] = useState(null);
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -15,6 +14,7 @@ const Sidebar = ({setMess,setSelectedConversation}) => {
       "Authorization": `Bearer ${user.accessToken}`
     },
   };
+  
   useEffect(() => {
     try {
       const getList = async () => {
@@ -28,31 +28,17 @@ const Sidebar = ({setMess,setSelectedConversation}) => {
     }
   },[]);
 
-  useEffect(()=>{
-    if(currentChat){
-      try {
-        const getMessage = async ()=>{
-          const rs = await axios.get(`/api/messages/${currentChat._id}`, config);
-          setMess(rs.data);
-          setSelectedConversation(currentChat);
-        }
-        getMessage();
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  },[currentChat]);
-
-
 
   return (
     <div className='col-lg-12'>
-      
-      <Search />
+      <button className='btn btn-primary mt-2'>Tạo Group Chat <AddOutlinedIcon /></button>
+      <Search conversation={conversation} setConversation={setConversation} setSelectedConversation={setSelectedConversation} />
       
       <div className='list-group'>
         {conversation.map(c=>(
-          <div key={c._id} onClick={() => setCurrentChat(c)}>
+          <div key={c._id} onClick={() =>{
+            setSelectedConversation(c)
+          }}>
             <BoxConversation con={c} />
             
           </div>
