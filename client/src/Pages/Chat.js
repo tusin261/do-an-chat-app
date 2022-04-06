@@ -10,6 +10,7 @@ import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
+import InfoConversation from '../components/InfoConversation';
 const Chat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -128,9 +129,10 @@ const Chat = () => {
       </div>
       <div className='row justify-content-between h-100'>
         <div className='col-lg-3 vh-100 overflow-auto border rounded'>
-          <Sidebar setSelectedConversation={setSelectedConversation} />
+          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages}/>
         </div>
         <div className='col-lg-9'>
+          <InfoConversation />
           <div className='box-chat overflow-auto border rounded'>
             {messages.map(i => (
               <div key={i._id} ref={scrollRef}>
@@ -144,9 +146,9 @@ const Chat = () => {
               onChange={handleTyping} placeholder="Nhập gì đó ...." />
             <button className='btn btn-primary' onClick={handleSendMessage}><SendOutlinedIcon /></button>
             <input type='file' id='hinhanh' className='d-none' onChange={sendMessageImage} />
-            <label for='hinhanh'><ImageOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>
+            <label htmlFor='hinhanh'><ImageOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>
             <input type='file' id='filekhac' className='d-none' />
-            <label for='hinhanh'><AttachFileOutlinedIcon color="primary" sx={{ fontSize: 40 }}/></label>
+            <label htmlFor='hinhanh'><AttachFileOutlinedIcon color="primary" sx={{ fontSize: 40 }}/></label>
             <span><MoreHorizOutlinedIcon color="primary" sx={{ fontSize: 40 }}/></span>
           </div>
         </div>

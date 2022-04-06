@@ -12,7 +12,8 @@ const BoxConversation = ({con}) => {
         <img width="32" height="32" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
         <div className='w-50 overflow-hidden mh-60'>
           <p>{!con.isGroupChat?getNameConversation(user,con):con.chat_name}</p>
-          <p className='mb-0'>{con.latestMessage?con.latestMessage.content:''}</p>
+          {(con.latestMessage && con.latestMessage.type=='text')&&<p className='mb-0'>{con.latestMessage.content}</p>} 
+          {(con.latestMessage && con.latestMessage.type=='image')&&<p className='mb-0'>Hình ảnh</p>} 
         </div>
         <div className='d-flex flex-column align-items-end'>
           <div>

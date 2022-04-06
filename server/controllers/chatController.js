@@ -61,6 +61,7 @@ module.exports.getAllChatOfUser = async (req, res) => {
 }
 
 module.exports.createGroupChat = async (req, res) => {
+
     const users = JSON.parse(req.body.member);
     users.push(req.user.id);
     try {
