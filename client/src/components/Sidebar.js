@@ -5,7 +5,7 @@ import useAuth from '../context/AuthContext';
 import Search from './Search';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 
-const Sidebar = ({ setSelectedConversation, messages }) => {
+const Sidebar = ({ setSelectedConversation, messages,noti,setNoti }) => {
   const { user } = useAuth();
   const [conversation, setConversation] = useState([]);
 
@@ -33,6 +33,12 @@ const Sidebar = ({ setSelectedConversation, messages }) => {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  const handleClickConversation = (conversations)=>{
+    setSelectedConversation(conversations);
+    const newListNoti = noti.filter(i=>i !== conversations._id);
+    setNoti(newListNoti);
   }
 
   const handleClickItemInList = (item) => {
@@ -139,9 +145,9 @@ const Sidebar = ({ setSelectedConversation, messages }) => {
       <div className='list-group'>
         {conversation.map(c => (
           <div key={c._id} onClick={() => {
-            setSelectedConversation(c)
+            handleClickConversation(c)
           }}>
-            <BoxConversation con={c} />
+            <BoxConversation con={c} noti={noti} setNoti={setNoti} />
 
           </div>
         ))}

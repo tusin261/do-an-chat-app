@@ -11,6 +11,9 @@ const conversationSchema = mongoose.Schema({
         ref: "Message",
     },
     creator: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    group_image:{
+        type:String
+    }
 }, { timestamps: true });
 
 const Conversation = mongoose.model("Conversation", conversationSchema);

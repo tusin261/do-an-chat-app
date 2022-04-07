@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Message from '../components/Message';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
-import useAuth, { AuthContext } from '../context/AuthContext'
+import useAuth from '../context/AuthContext'
 import "../components/Chat.css";
 import axios from 'axios';
 import { io } from 'socket.io-client';
@@ -16,7 +16,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
-  const [messageImage, setMessageImage] = useState(null);
+  const [noti, setNoti] = useState([]);
 
   let selectedChatCompare = useRef();
   let socket = useRef();
@@ -37,9 +37,8 @@ const Chat = () => {
         conversation_id: selectedConversation._id,
         type: 'text'
       }, config);
-      const newListMess = [...messages, data];
       socket.current.emit('send message', data);
-      setMessages(newListMess);
+      setMessages([...messages, data]);
     } catch (error) {
       console.log(error);
     }
@@ -64,7 +63,7 @@ const Chat = () => {
   }
 
   const handleSendMessage = (e) => {
-    if (e.keyCode === 13 && newMessage != '') {
+    if (e.keyCode === 13 && newMessage !== '') {
       sendMessage();
     }
     sendMessage();
@@ -76,12 +75,14 @@ const Chat = () => {
   useEffect(() => {
     socket.current = io(END_POINT);
   }, []);
-
   useEffect(() => {
     if (socket.current) {
       socket.current.emit('addUser', user);
+      socket.current.on('getUsers', data => {
+        console.log(data);
+      })
     }
-  }, [])
+  }, [user]);
 
   useEffect(() => {
     if (selectedConversation) {
@@ -107,19 +108,18 @@ const Chat = () => {
   useEffect(() => {
     socket.current.on('new message', (newMess) => {
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        console.log('co tin ');
+        setNoti((prev) => [...prev, newMess.conversation_id._id]);
       } else {
         setMessages([...messages, newMess]);
       }
     })
-  })
+  }, [messages])
 
-  useEffect(()=>{
-    if(scrollRef.current){
-      scrollRef.current.scrollIntoView({behavior:"smooth"});
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  },[messages]);
-
+  }, [messages]);
 
 
   return (
@@ -129,15 +129,15 @@ const Chat = () => {
       </div>
       <div className='row justify-content-between h-100'>
         <div className='col-lg-3 vh-100 overflow-auto border rounded'>
-          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages}/>
+          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} noti={noti} setNoti={setNoti} />
         </div>
         <div className='col-lg-9'>
-          <InfoConversation />
+          {selectedConversation && <InfoConversation setSelectedConversation={setSelectedConversation} selectedConversation={selectedConversation} />}
           <div className='box-chat overflow-auto border rounded'>
             {messages.map(i => (
               <div key={i._id} ref={scrollRef}>
                 <Message message={i} own={i.sender_id._id == user._id} />
-              </div> 
+              </div>
             ))}
           </div>
           <div className='d-flex justify-content-between align-items-center'>
@@ -148,8 +148,8 @@ const Chat = () => {
             <input type='file' id='hinhanh' className='d-none' onChange={sendMessageImage} />
             <label htmlFor='hinhanh'><ImageOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>
             <input type='file' id='filekhac' className='d-none' />
-            <label htmlFor='hinhanh'><AttachFileOutlinedIcon color="primary" sx={{ fontSize: 40 }}/></label>
-            <span><MoreHorizOutlinedIcon color="primary" sx={{ fontSize: 40 }}/></span>
+            <label htmlFor='hinhanh'><AttachFileOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>
+            <span><MoreHorizOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></span>
           </div>
         </div>
       </div>

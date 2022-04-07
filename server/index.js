@@ -37,8 +37,10 @@ const io = require('socket.io')(server, {
 });
 let users = [];
 const addUser = (userId, socketId) => {
-    !users.some((user) => user.userId === userId) &&
+    const userOnline = users.filter(u=>u._id == userId);
+    if(userOnline){
         users.push({ userId, socketId });
+    }
 };
 
 const removeUser = (socketId) => {
@@ -57,11 +59,17 @@ io.on('connection', (socket) => {
     socket.on('join chat', (room) => { 
         socket.join(room._id);
         console.log("User join " + room._id);
-        //io.to(room._id).emit("eve","Hello room");
     });
     socket.on('send message',(newMessage)=>{
-        const conversationId = newMessage.conversation_id._id;
-        socket.to(conversationId).emit("new message",newMessage);
+        const mem = newMessage.conversation_id.member;
+        const receiver = mem.find(i=>i._id !== newMessage.sender_id._id );
+        const userInList = getUser(receiver._id);
+        if(userInList){
+            socket.to(userInList.socketId).emit("new message",newMessage);
+        }
+        
+        // const conversationId = newMessage.conversation_id._id;
+        // socket.to(conversationId).emit("new message",newMessage);
     })
     
     socket.on("disconnect", () => {

@@ -1,5 +1,18 @@
 const Conversation = require('../models/conversationModel');
 const User = require('../models/userModel');
+const { v4: uuid } = require('uuid');
+const AWS = require('aws-sdk');
+
+AWS.config.update({
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_KEY_ID,
+    region: process.env.REGION
+});
+const s3 = new AWS.S3({
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_KEY_ID
+});
+const CLOUD_FONT_URL = 'https://d3pgq3xdjygd77.cloudfront.net/';
 
 //Tao hoac get chat 1-1
 module.exports.getChat = async (req, res) => {
@@ -101,11 +114,13 @@ module.exports.renameGroup = async (req, res) => {
 }
 
 module.exports.addUserToGroup = async (req, res) => {
-    const { conversationId, userId } = req.body;
-
+    const { conversationId} = req.body;
+    const users = JSON.parse(req.body.member);
     try {
+        const group = await Conversation.findOne({_id:conversationId});
+        const newListMember = [...group.member,...users];
         const updatedGroup = await Conversation.findByIdAndUpdate(conversationId, {
-            $push: { member: userId }
+            member: newListMember 
         },
             { new: true }
         ).populate('member', '-password')
@@ -130,4 +145,34 @@ module.exports.removeUserToGroup = async (req, res) => {
         res.status(500).json(error);
     }
 
+}
+
+module.exports.updateImageGroup = async (req, res) => {
+    const { conversationId} = req.body;
+    if (req.file) {
+        const image = req.file.originalname.split('.');
+        const fileType = image[image.length - 1];
+        const filePath = `${uuid() + Date.now().toString()}.${fileType}`;
+
+        const params = {
+            Bucket: "uploads3-chat-app",
+            Key: filePath,
+            Body: req.file.buffer
+        }
+        s3.upload(params, async (err, data) => {
+            if (err) {
+                res.status(500).json(error);
+            }
+            else {
+                const updatedGroup = await Conversation.findOneAndUpdate({
+                    _id: conversationId
+                }, { $set: { group_image: `${CLOUD_FONT_URL}${filePath}` } }, { new: true }
+                ).populate('member', '-password')
+                .populate('creator', '-password');
+                res.status(200).json(updatedGroup);
+            }
+        });
+    }else{
+        return res.status(500).json({message:"Không có file nào được chọn"});
+    }
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import useAuth from '../context/AuthContext';
 
-const BoxConversation = ({con}) => {
+const BoxConversation = ({con,noti,setNoti}) => {
   const {user} = useAuth();
   const getNameConversation = (user,conversation)=>{
     return conversation.member[0]._id===user._id?conversation.member[1].first_name:user.first_name;
@@ -20,7 +20,7 @@ const BoxConversation = ({con}) => {
             <p>09:00</p>  
           </div>
           <div>
-            <p className='mb-0'>1</p>
+          {noti.some(i=>i === con._id) && <p className='mb-0 text-danger'>1</p>}
           </div>
         </div>
       </div>

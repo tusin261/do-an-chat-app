@@ -5,7 +5,7 @@ import { BaseURL } from '../constants/path_constant';
 import axios from 'axios';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 const Topbar = () => {
-  const { user,dispatch } = useAuth();
+  const { user, dispatch } = useAuth();
   const imageURL = BaseURL.PUBLIC_FOLDER_IMAGE;
   const imageInput = useRef();
   const [selectedImage, setSelectedImage] = useState(null);
@@ -29,19 +29,19 @@ const Topbar = () => {
     }
   }, [selectedImage]);
 
-  const handleSubmit = async (e)=>{
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if(selectedImage){
+    if (selectedImage) {
       const formData = new FormData();
       formData.append("image", selectedImage);
       try {
-        const rs = await axios.post("/api/users/updateAvatar",formData,config);
-        dispatch({type:'LOGIN_SUCCESS',payload:rs.data});
+        const rs = await axios.post("/api/users/updateAvatar", formData, config);
+        dispatch({ type: 'LOGIN_SUCCESS', payload: rs.data });
         localStorage.setItem("user", JSON.stringify(rs.data));
       } catch (error) {
         console.log(error);
       }
-    }else{
+    } else {
       alert('Chua co hinh anh');
     }
   }
@@ -65,7 +65,16 @@ const Topbar = () => {
       <a href='#' className='navbar-brand'>Test</a>
       <div className='collapse navbar-collapse '>
         <ul className='navbar-nav ms-auto d-flex col-1 justify-content-between align-items-center'>
-          <li className='nav-item'><a className='nav-link' href='#'><NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} /></a></li>
+          <li className='nav-item'><span data-bs-toggle="dropdown" role="button"><NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} /></span>
+            <div className="dropdown-menu dropdown-menu-end py-0">
+              <ul className="list-group">
+              <li className="list-group-item">a</li>
+              <li className="list-group-item">a</li>
+              <li className="list-group-item">a</li>
+              <button className='btn btn-link'>Đánh dấu tất cả là đã đọc</button>
+              </ul>
+            </div>
+          </li>
           <li className='nav-item'>
             <img id="imageDropdown" data-bs-toggle="dropdown" width="32" height="32" className='rounded-circle' alt="100x100" src={user.image_url ? user.image_url : imageURL + "userDefault.png"} />
             <div className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
