@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useContext } from 'react'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import CallIcon from '@mui/icons-material/Call';
 import VideocamIcon from '@mui/icons-material/Videocam';
@@ -7,10 +7,19 @@ import useAuth from '../context/AuthContext';
 import axios from 'axios';
 import Alert from '@mui/material/Alert';
 import { Snackbar } from '@mui/material';
+import { ChatContext } from '../context/ChatContext'
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import {NotificationContext} from '../context/NotificationContext'
+
 const InfoConversation = ({ selectedConversation, setSelectedConversation }) => {
     const { user } = useAuth();
-
-    const [groupChatName, setGroupChatName] = useState(!selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name);
+    // !selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name
+    const [groupChatName, setGroupChatName] = useState();
     const [listResult, setListResult] = useState([]);
     const [listMember, setListMember] = useState([]);
     const [error, setError] = useState(false);
@@ -19,6 +28,12 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
     const imageInput = useRef();
     const [selectedImage, setSelectedImage] = useState(null);
     const [preview, setPreview] = useState();
+    const [successAddMember,setSuccessAddMember] = useState(false);
+    const [errorAddMember,setErrorAddMember] = useState(false);
+    const chatContext = useContext(ChatContext);
+    const notificationContext = useContext(NotificationContext);
+
+
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -43,19 +58,21 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
         }
     }
 
-    const handleAddMember = async ()=>{
+    const handleAddMember = async () => {
         const jsonData = {
-            conversationId:selectedConversation._id,
-            member:JSON.stringify(listMember.map((u)=>u._id))
-          }
-          try {
+            conversationId: selectedConversation._id,
+            member: JSON.stringify(listMember.map((u) => u._id))
+        }
+        try {
             const { data } = await axios.put("/api/chats/add-group", jsonData, config);
             setSelectedConversation(data);
             setListResult([]);
             setListMember([]);
-          } catch (error) {
-              console.log(error);
-          }
+            setSuccessAddMember(true);
+        } catch (error) {
+            console.log(error);
+            setErrorAddMember(true);
+        }
     }
 
     const handleClose = (event, reason) => {
@@ -64,6 +81,8 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
         }
         setOpen(false);
         setError(false);
+        setSuccessAddMember(false);
+        setErrorAddMember(false);
     };
 
     const searchMember = async (e) => {
@@ -124,6 +143,11 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
         }
     }
 
+    const openAlert = () => {
+        setOpen(true);
+    }
+
+
     const handleDeleteMember = async (mem) => {
         const jsonData = {
             userId: mem._id,
@@ -132,6 +156,20 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
         try {
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
             setSelectedConversation(data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    const OutGroup = async () => {
+        const jsonData = {
+            userId: user._id,
+            conversationId: selectedConversation._id
+        }
+        try {
+            const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
+            setSelectedConversation(null);
+            const newListConversation = chatContext.conversations.filter(i => i._id !== data._id);
+            chatContext.setConversations(newListConversation);
         } catch (error) {
             console.log(error);
         }
@@ -175,78 +213,91 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
                                         <div className='row justify-content-center'>
                                             <div className='col-lg-10 d-flex flex-column align-items-center'>
                                                 <img width="64" height="64" className='rounded-circle' alt="100x100" src={preview ? preview : selectedConversation.group_image} />
-                                                <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />
-                                                <div className='d-flex'>
+                                                {selectedConversation.isGroupChat && <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />}
+                                                {selectedConversation.isGroupChat && <div className='d-flex'>
                                                     <button className='btn btn-primary' onClick={chooseImage}>Chọn ảnh đại diện</button>
                                                     {selectedImage && <button className='btn btn-primary' onClick={submitImageGroup}>Đổi ảnh đại diện</button>}
-                                                </div>
-                                                <p className='mb-0'>Nhóm được tạo bởi {selectedConversation.creator.first_name}</p>
+                                                </div>}
+                                                {selectedConversation.isGroupChat && <p className='mb-0'>Nhóm được tạo bởi {selectedConversation.creator.first_name}</p>}
                                             </div>
                                         </div>
-                                        <div className='row'>
-                                            <div className="mb-1 px-0">
-                                                <label className="form-label">Tên cuộc trò chuyện</label>
-                                                <input type="text" className="form-control" value={groupChatName}
-                                                    onChange={(e) => setGroupChatName(e.target.value)} />
-                                                <div className="input-group-append">
-                                                    <button className='btn btn-primary' onClick={handleChangeName}>Thay Đổi</button>
-                                                </div>
-                                            </div>
-                                            <hr></hr>
-                                        </div>
-                                        <div className='row'>
-                                            {/* Thành viên-------------------------------------------------------------------- */}
-                                            <h5>Thành viên</h5>
-                                            <ul className='list-group px-0'>
-                                                {(selectedConversation.member).map((item, index) => (
-                                                    <li className="list-group-item" key={index}>
-                                                        <div className="d-flex w-100 align-items-center">
-                                                            <img width="32" height="32" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
-                                                            <div className='ms-3'>
-                                                                <p>{item.last_name} {item.first_name}</p>
-                                                                <p className='mb-0'>{item.email}</p>
-                                                            </div>
-                                                            {(selectedConversation.isGroupChat && selectedConversation.creator._id === user._id)
-                                                                && <button className='btn btn-danger' onClick={() => handleDeleteMember(item)}>Xóa</button>}
-
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        {/*Thêm Thành viên-------------------------------------------------------------------- */}
-                                        <div className='row mt-1'>
-                                            <h5>Thêm thành viên</h5>
-                                            <div className="px-0">
-                                                <input type="text" className="form-control" ref={inputSearch} onChange={searchMember} placeholder='Nhập tên để thêm vào nhóm' />
-                                            </div>
-                                            <div className='mb-1 d-flex flex-wrap'>
-                                                {listMember.length > 0 && listMember.map((user, index) => (
-                                                    <div key={user._id} className='col-lg-2 bg-danger d-flex text-white p-2 border rounded'>
-                                                        <p className='mb-0'>{user.first_name}</p>
-                                                        <span className='bg-danger ms-2' onClick={() => removerFromGroup(user)}>x</span>
+                                        {selectedConversation.isGroupChat && <>
+                                            <div className='row'>
+                                                <div className="mb-1 px-0">
+                                                    <label className="form-label">Tên cuộc trò chuyện</label>
+                                                    <input type="text" className="form-control" value={groupChatName}
+                                                        onChange={(e) => setGroupChatName(e.target.value)} />
+                                                    <div className="input-group-append">
+                                                        <button className='btn btn-primary' onClick={handleChangeName}>Thay Đổi</button>
                                                     </div>
-                                                ))}
+                                                </div>
+                                                <hr></hr>
                                             </div>
-                                            <ul className="list-group">
-                                                {listResult.length > 0 && listResult.map((item, index) => (
-                                                    <li className="list-group-item" key={index} onClick={() => handleClickItemInList(item)}>
-                                                        <div className="d-flex w-100 align-items-center">
-                                                            <img width="64" height="64" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
-                                                            <div className='ms-3'>
-                                                                <p>{item.last_name} {item.first_name}</p>
-                                                                <p>{item.email}</p>
+                                            <div className='row'>
+                                                {/* Thành viên-------------------------------------------------------------------- */}
+                                                <h5>Thành viên</h5>
+                                                <ul className='list-group px-0'>
+                                                    {(selectedConversation.member).map((item, index) => (
+                                                        <li className="list-group-item" key={index}>
+                                                            <div className="d-flex w-100 align-items-center">
+                                                                <img width="32" height="32" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
+                                                                <div className='ms-3'>
+                                                                    <p>{item.last_name} {item.first_name}</p>
+                                                                    <p className='mb-0'>{item.email}</p>
+                                                                </div>
+
+                                                                {(selectedConversation.isGroupChat && selectedConversation.creator._id === user._id)
+                                                                    && <button className='btn btn-danger' onClick={()=>handleDeleteMember(item)}>Xóa</button>}
                                                             </div>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                            {/*Thêm Thành viên-------------------------------------------------------------------- */}
+                                            <div className='row mt-1'>
+                                                <h5>Thêm thành viên</h5>
+                                                <div className="px-0">
+                                                    <input type="text" className="form-control" ref={inputSearch} onChange={searchMember} placeholder='Nhập tên để thêm vào nhóm' />
+                                                </div>
+                                                <div className='mb-1 d-flex flex-wrap'>
+                                                    {listMember.length > 0 && listMember.map((user, index) => (
+                                                        <div key={user._id} className='col-lg-2 bg-danger d-flex text-white p-2 border rounded'>
+                                                            <p className='mb-0'>{user.first_name}</p>
+                                                            <span className='bg-danger ms-2' onClick={() => removerFromGroup(user)}>x</span>
                                                         </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            <button className='btn btn-primary' onClick={handleAddMember}>Thêm thành viên</button>
-                                        </div>{error && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} open={error} autoHideDuration={1000} onClose={handleClose}>
-                                            <Alert severity="error" sx={{ width: '100%' }}>
-                                                Thành viên đã tồn tại
-                                            </Alert>
-                                        </Snackbar>}
+                                                    ))}
+                                                </div>
+                                                <ul className="list-group">
+                                                    {listResult.length > 0 && listResult.map((item, index) => (
+                                                        <li className="list-group-item" key={index} onClick={() => handleClickItemInList(item)}>
+                                                            <div className="d-flex w-100 align-items-center">
+                                                                <img width="64" height="64" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
+                                                                <div className='ms-3'>
+                                                                    <p>{item.last_name} {item.first_name}</p>
+                                                                    <p>{item.email}</p>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                                <button className='btn btn-primary' onClick={handleAddMember}>Thêm thành viên</button>
+                                            </div>{error && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={error} autoHideDuration={2000} onClose={handleClose}>
+                                                <Alert severity="error" sx={{ width: '100%' }}>
+                                                    Thành viên đã tồn tại
+                                                </Alert>
+                                            </Snackbar>}
+                                            {successAddMember && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={successAddMember} autoHideDuration={2000} onClose={handleClose}>
+                                                <Alert severity="success" sx={{ width: '100%' }}>
+                                                    Thêm thành viên thành công !!!
+                                                </Alert>
+                                            </Snackbar>}
+                                            {errorAddMember && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errorAddMember} autoHideDuration={2000} onClose={handleClose}>
+                                                <Alert severity="error" sx={{ width: '100%' }}>
+                                                    Thêm thành viên không thành công !!!
+                                                </Alert>
+                                            </Snackbar>}
+                                        </>}
+                                        
                                         <div className='row'>
                                             <p>Ảnh đã chia sẻ</p>
                                         </div>
@@ -254,7 +305,25 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
                                             <p>File</p>
                                         </div>
                                         <div className='row'>
-                                            <button className='btn btn-danger'>Rời khỏi nhóm</button>
+                                            <button className='btn btn-danger' data-bs-dismiss="modal" onClick={openAlert}>Rời khỏi nhóm</button>
+                                            <Dialog
+                                                open={open}
+                                                onClose={handleClose}
+                                                aria-describedby="alert-dialog-description"
+                                            >
+
+                                                <DialogContent>
+                                                    <DialogContentText id="alert-dialog-description">
+                                                        Bạn có muốn rời nhóm này?
+                                                    </DialogContentText>
+                                                </DialogContent>
+                                                <DialogActions>
+                                                    <Button onClick={handleClose}>Không</Button>
+                                                    <Button onClick={OutGroup} autoFocus>
+                                                        Có
+                                                    </Button>
+                                                </DialogActions>
+                                            </Dialog>
                                         </div>
                                     </div>
                                 </div>

@@ -1,22 +1,33 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext } from 'react'
 import BoxConversation from './BoxConversation'
 import axios from 'axios'
 import useAuth from '../context/AuthContext';
 import Search from './Search';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import { ChatContext } from '../context/ChatContext'
+import Alert from '@mui/material/Alert';
+import { Snackbar } from '@mui/material';
+import {NotificationContext} from '../context/NotificationContext'
 
-const Sidebar = ({ setSelectedConversation, messages,noti,setNoti }) => {
+const Sidebar = ({ setSelectedConversation, messages }) => {
   const { user } = useAuth();
-  const [conversation, setConversation] = useState([]);
-
   //group
   const [groupChatName, setGroupChatName] = useState('');
   const [listResult, setListResult] = useState([]);
   const [listMember, setListMember] = useState([]);
-
-
+  const [successCreateGroup, setSuccessCreateGroup] = useState(false);
+  const [errorCreateGroup, setErrorCreateGroup] = useState(false);
   const inputSearch = useRef();
+  const chatContext = useContext(ChatContext);
+  const notificationContext = useContext(NotificationContext);
 
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+        return;
+    }
+    setSuccessCreateGroup(false);
+    setSuccessCreateGroup(false);
+};
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -27,18 +38,17 @@ const Sidebar = ({ setSelectedConversation, messages,noti,setNoti }) => {
 
   const getList = async () => {
     try {
-      const rs = await axios.get("/api/chats", config);
-      const listConversation = rs.data;
-      setConversation(listConversation);
+      const { data } = await axios.get("/api/chats", config);
+      chatContext.setConversations(data);
     } catch (error) {
       console.log(error);
     }
   }
 
-  const handleClickConversation = (conversations)=>{
+  const handleClickConversation = (conversations) => {
     setSelectedConversation(conversations);
-    const newListNoti = noti.filter(i=>i !== conversations._id);
-    setNoti(newListNoti);
+    const newListNoti = notificationContext.notifications.filter(i => i !== conversations._id);
+    notificationContext.setNotifications(newListNoti);
   }
 
   const handleClickItemInList = (item) => {
@@ -68,21 +78,23 @@ const Sidebar = ({ setSelectedConversation, messages,noti,setNoti }) => {
     setListMember(newGroup);
   }
 
-  const handleResetModal = ()=>{
+  const handleResetModal = () => {
     setListMember([]);
   }
 
-  const createGroup = async ()=>{
+  const createGroup = async () => {
     const jsonData = {
-      chat_name:groupChatName,
-      member:JSON.stringify(listMember.map((u)=>u._id))
+      chat_name: groupChatName,
+      member: JSON.stringify(listMember.map((u) => u._id))
     }
     try {
-      const {data} = await axios.post("/api/chats/group",jsonData,config);
-      setListMember([...listMember,data]);
+      const { data } = await axios.post("/api/chats/group", jsonData, config);
+      setListMember([...listMember, data]);
       setSelectedConversation(data);
       setListMember([]);
+      setSuccessCreateGroup(true);
     } catch (error) {
+      setErrorCreateGroup(true);
       console.log(error);
     }
   }
@@ -95,6 +107,16 @@ const Sidebar = ({ setSelectedConversation, messages,noti,setNoti }) => {
   return (
     <div className='col-lg-12'>
       <button className='btn btn-primary mt-2' data-bs-toggle="modal" data-bs-target="#modalGroup">Tạo Group Chat <AddOutlinedIcon /></button>
+      {successCreateGroup && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} open={successCreateGroup} autoHideDuration={2000} onClose={handleClose}>
+        <Alert severity="success" sx={{ width: '100%' }}>
+          Tạo nhóm thành công !!!
+        </Alert>
+      </Snackbar>}
+      {errorCreateGroup && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} open={errorCreateGroup} autoHideDuration={2000} onClose={handleClose}>
+        <Alert severity="error" sx={{ width: '100%' }}>
+          Có lỗi xảy ra khi tạo nhóm!!!
+        </Alert>
+      </Snackbar>}
       <div className="modal fade" id="modalGroup" tabIndex="-1" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
@@ -140,14 +162,14 @@ const Sidebar = ({ setSelectedConversation, messages,noti,setNoti }) => {
           </div>
         </div>
       </div>
-      <Search conversation={conversation} setConversation={setConversation} setSelectedConversation={setSelectedConversation} />
+      <Search setSelectedConversation={setSelectedConversation} />
 
       <div className='list-group'>
-        {conversation.map(c => (
+        {chatContext.conversations.map(c => (
           <div key={c._id} onClick={() => {
             handleClickConversation(c)
           }}>
-            <BoxConversation con={c} noti={noti} setNoti={setNoti} />
+            <BoxConversation con={c} />
 
           </div>
         ))}

@@ -114,13 +114,13 @@ module.exports.renameGroup = async (req, res) => {
 }
 
 module.exports.addUserToGroup = async (req, res) => {
-    const { conversationId} = req.body;
+    const { conversationId } = req.body;
     const users = JSON.parse(req.body.member);
     try {
-        const group = await Conversation.findOne({_id:conversationId});
-        const newListMember = [...group.member,...users];
+        const group = await Conversation.findOne({ _id: conversationId });
+        const newListMember = [...group.member, ...users];
         const updatedGroup = await Conversation.findByIdAndUpdate(conversationId, {
-            member: newListMember 
+            member: newListMember
         },
             { new: true }
         ).populate('member', '-password')
@@ -132,23 +132,42 @@ module.exports.addUserToGroup = async (req, res) => {
 }
 module.exports.removeUserToGroup = async (req, res) => {
     const { conversationId, userId } = req.body;
+    if (userId === req.user.id) {
+        try {
+            const updatedGroup = await Conversation.findByIdAndUpdate(conversationId, {
+                $pull: { member: userId }
+            },
+                { new: true }
+            );
+            const newIndexOfCreator = Math.floor(Math.random() * updatedGroup.member.length);
+            const updatedGroup1 = await Conversation.findByIdAndUpdate(conversationId, {
+                creator: updatedGroup.member[newIndexOfCreator]
+            },
+                { new: true }
+            ).populate('member', '-password')
+                .populate('creator', '-password');
+            return res.status(200).json(updatedGroup1);
+        } catch (error) {
+            return res.status(500).json(error);
+        }
 
-    try {
-        const updatedGroup = await Conversation.findByIdAndUpdate(conversationId, {
-            $pull: { member: userId }
-        },
-            { new: true }
-        ).populate('member', '-password')
-            .populate('creator', '-password');
-        res.status(200).json(updatedGroup);
-    } catch (error) {
-        res.status(500).json(error);
+    } else {
+        try {
+            const updatedGroup = await Conversation.findByIdAndUpdate(conversationId, {
+                $pull: { member: userId }
+            },
+                { new: true }
+            ).populate('member', '-password')
+                .populate('creator', '-password');
+            return res.status(200).json(updatedGroup);
+        } catch (error) {
+            return res.status(500).json(error);
+        }
     }
-
 }
 
 module.exports.updateImageGroup = async (req, res) => {
-    const { conversationId} = req.body;
+    const { conversationId } = req.body;
     if (req.file) {
         const image = req.file.originalname.split('.');
         const fileType = image[image.length - 1];
@@ -168,11 +187,11 @@ module.exports.updateImageGroup = async (req, res) => {
                     _id: conversationId
                 }, { $set: { group_image: `${CLOUD_FONT_URL}${filePath}` } }, { new: true }
                 ).populate('member', '-password')
-                .populate('creator', '-password');
+                    .populate('creator', '-password');
                 res.status(200).json(updatedGroup);
             }
         });
-    }else{
-        return res.status(500).json({message:"Không có file nào được chọn"});
+    } else {
+        return res.status(500).json({ message: "Không có file nào được chọn" });
     }
 }

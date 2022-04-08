@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import useAuth from '../context/AuthContext';
+import {NotificationContext} from '../context/NotificationContext'
 
-const BoxConversation = ({con,noti,setNoti}) => {
+const BoxConversation = ({con}) => {
   const {user} = useAuth();
+  const notificationContext = useContext(NotificationContext);
+
   const getNameConversation = (user,conversation)=>{
     return conversation.member[0]._id===user._id?conversation.member[1].first_name:user.first_name;
   }
@@ -20,7 +23,7 @@ const BoxConversation = ({con,noti,setNoti}) => {
             <p>09:00</p>  
           </div>
           <div>
-          {noti.some(i=>i === con._id) && <p className='mb-0 text-danger'>1</p>}
+          {notificationContext.notifications.some(i=>i === con._id) && <p className='mb-0 text-danger'>1</p>}
           </div>
         </div>
       </div>

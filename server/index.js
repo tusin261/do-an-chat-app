@@ -61,13 +61,21 @@ io.on('connection', (socket) => {
         console.log("User join " + room._id);
     });
     socket.on('send message',(newMessage)=>{
-        const mem = newMessage.conversation_id.member;
-        const receiver = mem.find(i=>i._id !== newMessage.sender_id._id );
-        const userInList = getUser(receiver._id);
-        if(userInList){
-            socket.to(userInList.socketId).emit("new message",newMessage);
+        if(newMessage.conversation_id.isGroupChat){
+            const listReceive = newMessage.conversation_id.member;
+            const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
+            const newListReceiveOnlineNoSender = newListReceiveOnline.filter(i=>i.userId !== newMessage.sender_id._id );
+            for(let i=0;i<newListReceiveOnlineNoSender.length;i++){
+                socket.to(newListReceiveOnlineNoSender[i].socketId).emit("new message group",newMessage);
+            }
+        }else{
+            const mem = newMessage.conversation_id.member;
+            const receiver = mem.find(i=>i._id !== newMessage.sender_id._id );
+            const userInList = getUser(receiver._id);
+            if(userInList){
+                socket.to(userInList.socketId).emit("new message",newMessage);
+            }
         }
-        
         // const conversationId = newMessage.conversation_id._id;
         // socket.to(conversationId).emit("new message",newMessage);
     })

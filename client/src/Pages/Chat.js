@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import Message from '../components/Message';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
@@ -11,13 +11,13 @@ import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import InfoConversation from '../components/InfoConversation';
+import {NotificationContext} from '../context/NotificationContext'
 const Chat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
-  const [noti, setNoti] = useState([]);
-
+  const notificationContext = useContext(NotificationContext);
   let selectedChatCompare = useRef();
   let socket = useRef();
   const scrollRef = useRef();
@@ -29,7 +29,7 @@ const Chat = () => {
       "Authorization": `Bearer ${user.accessToken}`
     },
   };
-
+  console.log(selectedConversation);
   const sendMessage = async () => {
     try {
       const { data } = await axios.post("/api/messages", {
@@ -37,6 +37,7 @@ const Chat = () => {
         conversation_id: selectedConversation._id,
         type: 'text'
       }, config);
+      console.log(data);
       socket.current.emit('send message', data);
       setMessages([...messages, data]);
     } catch (error) {
@@ -108,7 +109,18 @@ const Chat = () => {
   useEffect(() => {
     socket.current.on('new message', (newMess) => {
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        setNoti((prev) => [...prev, newMess.conversation_id._id]);
+        notificationContext.setNotifications([...notificationContext.notifications, newMess.conversation_id._id]);
+      } else {
+        setMessages([...messages, newMess]);
+      }
+    })
+  }, [messages])
+  
+
+  useEffect(() => {
+    socket.current.on('new message group', (newMess) => {
+      if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
+        notificationContext.setNotifications([...notificationContext.notifications, newMess.conversation_id._id]);
       } else {
         setMessages([...messages, newMess]);
       }
@@ -129,7 +141,7 @@ const Chat = () => {
       </div>
       <div className='row justify-content-between h-100'>
         <div className='col-lg-3 vh-100 overflow-auto border rounded'>
-          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} noti={noti} setNoti={setNoti} />
+          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} />
         </div>
         <div className='col-lg-9'>
           {selectedConversation && <InfoConversation setSelectedConversation={setSelectedConversation} selectedConversation={selectedConversation} />}

@@ -1,9 +1,12 @@
 import axios from 'axios';
-import React, { useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import useAuth from '../context/AuthContext';
+import {ChatContext} from '../context/ChatContext'
 
-const Search = ({setConversation,conversation,setSelectedConversation}) => {
+const Search = ({setSelectedConversation}) => {
     const { user } = useAuth();
+    const chatContext = useContext(ChatContext);
+
     const [listResult, setListResult] = useState([]);
     const inputSearch = useRef();
     axios.defaults.baseURL = "http://localhost:5000";
@@ -29,11 +32,12 @@ const Search = ({setConversation,conversation,setSelectedConversation}) => {
             const rs = await axios.post("/api/chats",{
                 userId:user2_id
             },config);
-            const newConversation = conversation.find(e=>e._id === rs.data._id);
+            const newConversation = chatContext.conversations.find(e=>e._id === rs.data._id);
             if(newConversation){
                 setSelectedConversation(newConversation);
             }else{
-                setConversation((conversation)=>[...conversation,rs.data]);
+                chatContext.setConversations([...chatContext.conversations,rs.data]);
+                setSelectedConversation(rs.data)
             }
             setListResult([]);
             inputSearch.current.value = '';
