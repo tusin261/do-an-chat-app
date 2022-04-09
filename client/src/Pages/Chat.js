@@ -5,23 +5,25 @@ import Topbar from '../components/Topbar';
 import useAuth from '../context/AuthContext'
 import "../components/Chat.css";
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import io from 'socket.io-client';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import InfoConversation from '../components/InfoConversation';
 import {NotificationContext} from '../context/NotificationContext'
+import { ChatContext } from '../context/ChatContext'
+let socket;
 const Chat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const notificationContext = useContext(NotificationContext);
+  const chatContext = useContext(ChatContext);
+
   let selectedChatCompare = useRef();
-  let socket = useRef();
   const scrollRef = useRef();
-  const END_POINT = "http://localhost:5000";
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -29,7 +31,6 @@ const Chat = () => {
       "Authorization": `Bearer ${user.accessToken}`
     },
   };
-  console.log(selectedConversation);
   const sendMessage = async () => {
     try {
       const { data } = await axios.post("/api/messages", {
@@ -38,7 +39,7 @@ const Chat = () => {
         type: 'text'
       }, config);
       console.log(data);
-      socket.current.emit('send message', data);
+      socket.emit('send message', data);
       setMessages([...messages, data]);
     } catch (error) {
       console.log(error);
@@ -56,7 +57,7 @@ const Chat = () => {
     try {
       const { data } = await axios.post("/api/messages/image", formData, config);
       const newListMess = [...messages, data];
-      socket.current.emit('send message', data);
+      socket.emit('send message', data);
       setMessages(newListMess);
     } catch (error) {
       console.log(error);
@@ -71,15 +72,44 @@ const Chat = () => {
   }
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-
   }
+
+  const getList = async () => {
+    try {
+      const { data } = await axios.get("/api/chats", config);
+      chatContext.setConversations(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const updateConversation = async (newMessage)=>{
+    if(newMessage.conversation_id.isGroupChat){
+
+    }else{
+      const receiver = newMessage.conversation_id.member.find(i=>i._id !== user._id);
+      try {
+        getList();
+        console.log(chatContext.conversations);
+        const {data} = await axios.post("/api/chats", {userId:receiver._id}, config);
+        chatContext.setConversations([...chatContext.conversations,data]);
+        console.log(data);
+        
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    
+  }
+
+  useEffect(()=>{
+    socket = io("http://localhost:5000");
+  },[])
+
   useEffect(() => {
-    socket.current = io(END_POINT);
-  }, []);
-  useEffect(() => {
-    if (socket.current) {
-      socket.current.emit('addUser', user);
-      socket.current.on('getUsers', data => {
+    if (socket) {
+      socket.emit('addUser', user);
+      socket.on('getUsers', data => {
         console.log(data);
       })
     }
@@ -87,7 +117,7 @@ const Chat = () => {
 
   useEffect(() => {
     if (selectedConversation) {
-      socket.current.emit('join chat', selectedConversation);
+      socket.emit('join chat', selectedConversation);
     }
   }, [selectedConversation]);
 
@@ -107,9 +137,18 @@ const Chat = () => {
   }, [selectedConversation])
 
   useEffect(() => {
-    socket.current.on('new message', (newMess) => {
+    socket.on('new message', (newMess) => {
+      console.log(newMess);
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        notificationContext.setNotifications([...notificationContext.notifications, newMess.conversation_id._id]);
+        if(chatContext.conversations.some(i=>i._id === newMess.conversation_id._id)){
+          const dataNotification = {
+            id:newMess.conversation_id._id,
+            type:'text'
+          }
+          notificationContext.setNotifications([...notificationContext.notifications, newMess.conversation_id._id]);
+        }else{
+          updateConversation(newMess);
+        }
       } else {
         setMessages([...messages, newMess]);
       }
@@ -118,9 +157,13 @@ const Chat = () => {
   
 
   useEffect(() => {
-    socket.current.on('new message group', (newMess) => {
+    socket.on('new message group', (newMess) => {
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        notificationContext.setNotifications([...notificationContext.notifications, newMess.conversation_id._id]);
+        const dataNotification = {
+          id:newMess.conversation_id._id,
+          type:'text'
+        }
+        notificationContext.setNotifications([...notificationContext.notifications,dataNotification]);
       } else {
         setMessages([...messages, newMess]);
       }
@@ -137,14 +180,14 @@ const Chat = () => {
   return (
     <div className='container-fluid'>
       <div className='row'>
-        <Topbar />
+        <Topbar socket={socket}/>
       </div>
       <div className='row justify-content-between h-100'>
         <div className='col-lg-3 vh-100 overflow-auto border rounded'>
-          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} />
+          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} socket={socket}/>
         </div>
         <div className='col-lg-9'>
-          {selectedConversation && <InfoConversation setSelectedConversation={setSelectedConversation} selectedConversation={selectedConversation} />}
+          {selectedConversation && <InfoConversation setSelectedConversation={setSelectedConversation} selectedConversation={selectedConversation} socket={socket} />}
           <div className='box-chat overflow-auto border rounded'>
             {messages.map(i => (
               <div key={i._id} ref={scrollRef}>

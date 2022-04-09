@@ -80,6 +80,51 @@ io.on('connection', (socket) => {
         // socket.to(conversationId).emit("new message",newMessage);
     })
     
+    socket.on('create group',(data)=>{
+        console.log(data)
+        const listReceive = data.member;
+        const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
+        const newListReceiveOnlineNoSender = newListReceiveOnline.filter(i=>i.userId !== data.creator._id );
+        for(let i=0;i<newListReceiveOnlineNoSender.length;i++){
+            socket.to(newListReceiveOnlineNoSender[i].socketId).emit("notification new group",data);
+        }
+    })
+
+    socket.on('out group',(conversation)=>{
+        const listReceive = conversation.data.member;
+        const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
+        for(let i=0;i<newListReceiveOnline.length;i++){
+            socket.to(newListReceiveOnline[i].socketId).emit("notification out group",conversation);
+        }
+        //example data
+        // {
+        //     data: {
+        //       _id: '62519548b4d8c50d6999a79b',
+        //       chat_name: 'test',
+        //       isGroupChat: true,
+        //       member: [ [Object] ],
+        //       creator: {
+        //         _id: '622b1fc37035dfc30dc53c34',
+        //         first_name: 'ji',
+        //         last_name: 'ji',
+        //         email: 'loltv156+4@gmail.com',
+        //         isAdmin: false,
+        //         image_url: 'https://d3pgq3xdjygd77.cloudfront.net/e999c6ba-346a-4c35-82d9-afadf9fb0fec1649476317425.jpg',
+        //         sent_request: [],
+        //         request: [],
+        //         listFriend: [],
+        //         createdAt: '2022-03-11T10:09:07.585Z',
+        //         updatedAt: '2022-04-09T03:51:57.854Z',
+        //         __v: 0
+        //       },
+        //       createdAt: '2022-04-09T14:16:40.166Z',
+        //       updatedAt: '2022-04-09T15:19:18.701Z',
+        //       __v: 0
+        //     },
+        //     name: 'av'
+        //   }
+    });
+
     socket.on("disconnect", () => {
         console.log("a user disconnected!");
         removeUser(socket.id);

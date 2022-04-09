@@ -12,7 +12,7 @@ ReactDOM.render(
       <AuthContextProvider>
         <ChatProvider>
           <NotificationProvider>
-            <App />
+              <App />
           </NotificationProvider>
         </ChatProvider>
       </AuthContextProvider>

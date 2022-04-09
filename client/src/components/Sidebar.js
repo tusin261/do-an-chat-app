@@ -9,7 +9,7 @@ import Alert from '@mui/material/Alert';
 import { Snackbar } from '@mui/material';
 import {NotificationContext} from '../context/NotificationContext'
 
-const Sidebar = ({ setSelectedConversation, messages }) => {
+const Sidebar = ({ setSelectedConversation, messages,socket}) => {
   const { user } = useAuth();
   //group
   const [groupChatName, setGroupChatName] = useState('');
@@ -47,7 +47,7 @@ const Sidebar = ({ setSelectedConversation, messages }) => {
 
   const handleClickConversation = (conversations) => {
     setSelectedConversation(conversations);
-    const newListNoti = notificationContext.notifications.filter(i => i !== conversations._id);
+    const newListNoti = notificationContext.notifications.filter(i => i.id !== conversations._id);
     notificationContext.setNotifications(newListNoti);
   }
 
@@ -89,6 +89,7 @@ const Sidebar = ({ setSelectedConversation, messages }) => {
     }
     try {
       const { data } = await axios.post("/api/chats/group", jsonData, config);
+      socket.emit('create group',data);
       setListMember([...listMember, data]);
       setSelectedConversation(data);
       setListMember([]);
@@ -98,10 +99,16 @@ const Sidebar = ({ setSelectedConversation, messages }) => {
       console.log(error);
     }
   }
+  useEffect(()=>{
+    socket?.on('notification new group',data=>{
+      getList();
+    })
+  },[chatContext.conversations]);
 
   useEffect(() => {
     getList();
   }, [messages]);
+
 
 
   return (

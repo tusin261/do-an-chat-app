@@ -1,15 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import useAuth from '../context/AuthContext';
 import "../components/Chat.css";
 import { BaseURL } from '../constants/path_constant';
 import axios from 'axios';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
-const Topbar = () => {
+import { NotificationContext } from '../context/NotificationContext';
+import { Badge } from '@mui/material';
+const Topbar = ({socket}) => {
   const { user, dispatch } = useAuth();
   const imageURL = BaseURL.PUBLIC_FOLDER_IMAGE;
   const imageInput = useRef();
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState();
+  const [invi,setInvi] = useState(true);
+  const notificationContext = useContext(NotificationContext);
+
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -28,6 +33,30 @@ const Topbar = () => {
       setPreview(null);
     }
   }, [selectedImage]);
+
+  useEffect(()=>{
+    socket?.on('notification new group',data=>{
+      setInvi(false);
+      const dataNotification = {
+        id:data._id,
+        type:'group',
+        message:`Bạn được thêm vào nhóm ${data.chat_name}`
+      }
+      notificationContext.setNotifications([...notificationContext.notifications,dataNotification]);
+    })
+  })
+
+  useEffect(()=>{
+    socket?.on('notification out group',updatedConversation=>{
+      setInvi(false);
+      const dataNotification = {
+        id:updatedConversation.data._id,
+        type:'group',
+        message: `${updatedConversation.name} đã rời nhóm ${updatedConversation.data.chat_name}`
+      }
+      notificationContext.setNotifications([...notificationContext.notifications,dataNotification]);
+    })
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,22 +86,30 @@ const Topbar = () => {
     } else {
       setSelectedImage(null);
     }
-
   }
+
+  const handleSeenNotification = ()=>{
+    setInvi(true);
+  }
+
+  console.log(notificationContext.notifications);
 
   return (
     <nav className='navbar navbar-expand-lg'>
       <a href='#' className='navbar-brand'>Test</a>
       <div className='collapse navbar-collapse '>
         <ul className='navbar-nav ms-auto d-flex col-1 justify-content-between align-items-center'>
-          <li className='nav-item'><span data-bs-toggle="dropdown" role="button"><NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} /></span>
+          <li className='nav-item'><span data-bs-toggle="dropdown" role="button">
+            <Badge color="error" variant="dot" invisible={invi}>
+              <NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} onClick={handleSeenNotification}/> 
+            </Badge></span>
             <div className="dropdown-menu dropdown-menu-end py-0">
               <ul className="list-group">
-              <li className="list-group-item">a</li>
-              <li className="list-group-item">a</li>
-              <li className="list-group-item">a</li>
-              <button className='btn btn-link'>Đánh dấu tất cả là đã đọc</button>
-              </ul>
+                {notificationContext.notifications.filter(e=>e.type == 'group').map((item,index) => (
+                  <li key={index} className="list-group-item">{item.message}</li>
+                ))}
+                <button className='btn btn-link'>Đánh dấu tất cả là đã đọc</button>
+              </ul> 
             </div>
           </li>
           <li className='nav-item'>

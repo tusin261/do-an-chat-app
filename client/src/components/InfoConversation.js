@@ -16,7 +16,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import {NotificationContext} from '../context/NotificationContext'
 
-const InfoConversation = ({ selectedConversation, setSelectedConversation }) => {
+const InfoConversation = ({ selectedConversation, setSelectedConversation,socket }) => {
     const { user } = useAuth();
     // !selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name
     const [groupChatName, setGroupChatName] = useState();
@@ -167,6 +167,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation }) => 
         }
         try {
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
+            socket.emit('out group',{data,name:user.first_name});
             setSelectedConversation(null);
             const newListConversation = chatContext.conversations.filter(i => i._id !== data._id);
             chatContext.setConversations(newListConversation);
