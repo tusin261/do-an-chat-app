@@ -1,13 +1,20 @@
-import { useState, createContext } from 'react'
+import { useState, createContext,useReducer } from 'react'
+import ChatReducer from '../context/ChatReducer'
 
-const ChatContext = createContext();
+const initialState = {
+    chats: [],
+    isLoading: false,
+    isError: false,
+};
 
-function ChatProvider({ children }) {
-    const [conversations, setConversations] = useState([]);
+export const ChatContext = createContext();
+
+export const ChatProvider = ({ children }) => {
+    const [conversation, dispatch] = useReducer(ChatReducer,initialState);
 
     const value = {
-        conversations,
-        setConversations
+        conversationState:conversation,
+        conversationDispatch:dispatch
     }
 
     return (
@@ -16,5 +23,3 @@ function ChatProvider({ children }) {
         </ChatContext.Provider>
     )
 }
-
-export { ChatContext, ChatProvider }

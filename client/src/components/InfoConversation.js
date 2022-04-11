@@ -41,7 +41,6 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
             "Authorization": `Bearer ${user.accessToken}`
         },
     };
-    console.log(selectedConversation)
     const getNameConversation = (user, conversation) => {
         return conversation.member[0]._id === user._id ? conversation.member[1].first_name : user.first_name;
     }

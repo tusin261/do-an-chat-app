@@ -87,13 +87,9 @@ const Topbar = ({socket}) => {
       setSelectedImage(null);
     }
   }
-
   const handleSeenNotification = ()=>{
     setInvi(true);
   }
-
-  console.log(notificationContext.notifications);
-
   return (
     <nav className='navbar navbar-expand-lg'>
       <a href='#' className='navbar-brand'>Test</a>

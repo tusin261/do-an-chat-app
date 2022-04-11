@@ -5,8 +5,9 @@ import {ChatContext} from '../context/ChatContext'
 
 const Search = ({setSelectedConversation}) => {
     const { user } = useAuth();
-    const chatContext = useContext(ChatContext);
-
+    const { conversationState, conversationDispatch } = useContext(ChatContext);
+  const { chats } = conversationState;
+    
     const [listResult, setListResult] = useState([]);
     const inputSearch = useRef();
     axios.defaults.baseURL = "http://localhost:5000";
@@ -17,6 +18,7 @@ const Search = ({setSelectedConversation}) => {
         },
     };
     const handleChange = async (e) => {
+        console.log(chats);
         const keyword = e.target.value;
         try {
             const rs = await axios.get("/api/users?q=" + keyword, config);
@@ -29,14 +31,15 @@ const Search = ({setSelectedConversation}) => {
     const handleClick = async (item)=>{
         const user2_id = item._id;
         try {
+            console.log(chats);
             const rs = await axios.post("/api/chats",{
                 userId:user2_id
             },config);
-            const newConversation = chatContext.conversations.find(e=>e._id === rs.data._id);
+            const newConversation = chats.find(e=>e._id === rs.data._id);
             if(newConversation){
                 setSelectedConversation(newConversation);
             }else{
-                chatContext.setConversations([...chatContext.conversations,rs.data]);
+                conversationDispatch({ type: "ADD_CHATS", payload: rs.data });
                 setSelectedConversation(rs.data)
             }
             setListResult([]);

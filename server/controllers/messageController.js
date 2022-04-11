@@ -43,6 +43,50 @@ module.exports.sendMessage = async (req,res)=>{
     }
 }
 
+module.exports.sendMessageImageVideo = async (req,res)=>{
+    const {conversation_id,type} = req.body;
+    if(req.file){
+        const video = req.file.originalname.split('.');
+        const fileType = video[video.length - 1];
+        const filePath = `${uuid() + Date.now().toString()}.${fileType}`;
+
+        const params = {
+            Bucket: "uploads3-chat-app",
+            Key: filePath,
+            Body: req.file.buffer
+        }
+        s3.upload(params,async (err, data)=>{
+            if (err) {
+                res.status(500).json(error);
+            }else{
+                const newMessage = {
+                    sender_id:req.user.id,
+                    content:`${CLOUD_FONT_URL}${filePath}`,
+                    type,
+                    conversation_id
+                }
+                try {
+                    const messageQuery = await Message.create(newMessage);
+                    const messageDoc1 = await messageQuery.populate('sender_id',"first_name last_name image_url");
+                    const messageDoc2 = await messageDoc1.populate("conversation_id");
+                    const message = await User.populate(messageDoc2,{
+                        path:"conversation_id.member",
+                        select:"first_name last_name image_url email"
+                    });
+                    await Conversation.findByIdAndUpdate(req.body.conversation_id,{
+                        latestMessage:message,
+                    });
+                    res.json(message); 
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        })
+    }else{
+        return res.status(500).json({message:"Không có file nào được chọn"}); 
+    }
+}
+
 module.exports.sendMessageImage = async (req,res)=>{
     const {conversation_id,type} = req.body;
     
@@ -51,6 +95,50 @@ module.exports.sendMessageImage = async (req,res)=>{
         const fileType = image[image.length - 1];
         const filePath = `${uuid() + Date.now().toString()}.${fileType}`;
 
+        const params = {
+            Bucket: "uploads3-chat-app",
+            Key: filePath,
+            Body: req.file.buffer
+        }
+        s3.upload(params,async (err, data)=>{
+            if (err) {
+                res.status(500).json(error);
+            }else{
+                const newMessage = {
+                    sender_id:req.user.id,
+                    content:`${CLOUD_FONT_URL}${filePath}`,
+                    type,
+                    conversation_id
+                }
+                try {
+                    const messageQuery = await Message.create(newMessage);
+                    const messageDoc1 = await messageQuery.populate('sender_id',"first_name last_name image_url");
+                    const messageDoc2 = await messageDoc1.populate("conversation_id");
+                    const message = await User.populate(messageDoc2,{
+                        path:"conversation_id.member",
+                        select:"first_name last_name image_url email"
+                    });
+                    await Conversation.findByIdAndUpdate(req.body.conversation_id,{
+                        latestMessage:message,
+                    });
+                    res.json(message); 
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        })
+    }else{
+        return res.status(500).json({message:"Không có file nào được chọn"}); 
+    }
+}
+
+module.exports.sendMessageFile = async (req,res)=>{
+    const {conversation_id,type} = req.body;
+    if(req.file){
+        const myFile = req.file.originalname.split('.');
+        const fileName = myFile[0];
+        const fileType = myFile[myFile.length - 1];
+        const filePath = `${fileName}-filename-${uuid() + Date.now().toString()}-size-${req.file.size}.${fileType}`;
         const params = {
             Bucket: "uploads3-chat-app",
             Key: filePath,

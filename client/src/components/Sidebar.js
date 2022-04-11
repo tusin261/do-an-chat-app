@@ -18,8 +18,9 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
   const [successCreateGroup, setSuccessCreateGroup] = useState(false);
   const [errorCreateGroup, setErrorCreateGroup] = useState(false);
   const inputSearch = useRef();
-  const chatContext = useContext(ChatContext);
+  const {conversationState,conversationDispatch} = useContext(ChatContext);
   const notificationContext = useContext(NotificationContext);
+
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -37,10 +38,12 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
   };
 
   const getList = async () => {
+    conversationDispatch({type: "GET_CHATS_START"});
     try {
       const { data } = await axios.get("/api/chats", config);
-      chatContext.setConversations(data);
+      conversationDispatch({type: "GET_CHATS_SUCCESS",payload:data});
     } catch (error) {
+      conversationDispatch({type: "GET_CHATS_FAILURE"});
       console.log(error);
     }
   }
@@ -103,7 +106,7 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
     socket?.on('notification new group',data=>{
       getList();
     })
-  },[chatContext.conversations]);
+  },[]);
 
   useEffect(() => {
     getList();
@@ -172,7 +175,7 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
       <Search setSelectedConversation={setSelectedConversation} />
 
       <div className='list-group'>
-        {chatContext.conversations.map(c => (
+        {conversationState.chats.map(c => (
           <div key={c._id} onClick={() => {
             handleClickConversation(c)
           }}>
