@@ -42,8 +42,11 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
         },
     };
     const getNameConversation = (user, conversation) => {
-        return conversation.member[0]._id === user._id ? conversation.member[1].first_name : user.first_name;
+        return conversation.member[0]._id === user._id ? conversation.member[1].first_name : conversation.member[0].first_name;
     }
+    const getImageConversation = (user,conversation)=>{
+        return conversation.member[0]._id===user._id?conversation.member[1].image_url:conversation.member[0].image_url;
+      }
     const handleClickItemInList = (item) => {
         const existedMember = listMember.find(i => i._id === item._id);
         const existedMemberinConversation = selectedConversation.member.find(i => i._id === item._id);
@@ -175,6 +178,14 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
         }
     }
 
+    const getImageForTypeChat = (conversation)=>{
+        if(conversation.isGroupChat){
+            return conversation.group_image;
+        }else{
+            return getImageConversation(user,conversation)
+        }
+    }
+
     useEffect(() => {
         if (selectedImage) {
             const render = new FileReader();
@@ -191,7 +202,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
         <div className='col-lg-12 border rounded'>
             <div className='w-100 d-flex justify-content-between align-items-center'>
                 <div className='d-flex p-2'>
-                    <img width="42" height="42" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
+                    <img width="42" height="42" className='rounded-circle' alt="100x100" src={selectedConversation.isGroupChat?selectedConversation.group_image:getImageConversation(user,selectedConversation)} />
                     <div className='ms-2'>
                         <h5 className='mb-0'>{!selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name}</h5>
                         <span><FiberManualRecordIcon style={{ fontSize: 16, color: "#B6FFCE" }} /></span>
@@ -212,11 +223,11 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                                     <div className="container-fluid">
                                         <div className='row justify-content-center'>
                                             <div className='col-lg-10 d-flex flex-column align-items-center'>
-                                                <img width="64" height="64" className='rounded-circle' alt="100x100" src={preview ? preview : selectedConversation.group_image} />
+                                                <img width="64" height="64" className='rounded-circle' alt="100x100" src={preview ? preview : getImageForTypeChat(selectedConversation)} />
                                                 {selectedConversation.isGroupChat && <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />}
                                                 {selectedConversation.isGroupChat && <div className='d-flex'>
-                                                    <button className='btn btn-primary' onClick={chooseImage}>Chọn ảnh đại diện</button>
-                                                    {selectedImage && <button className='btn btn-primary' onClick={submitImageGroup}>Đổi ảnh đại diện</button>}
+                                                    <button className='btn btn-primary' onClick={chooseImage}>Chọn ảnh nhóm</button>
+                                                    {selectedImage && <button className='btn btn-primary' onClick={submitImageGroup}>Đổi ảnh nhóm</button>}
                                                 </div>}
                                                 {selectedConversation.isGroupChat && <p className='mb-0'>Nhóm được tạo bởi {selectedConversation.creator.first_name}</p>}
                                             </div>

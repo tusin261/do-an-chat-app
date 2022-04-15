@@ -6,10 +6,10 @@ import Search from './Search';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import { ChatContext } from '../context/ChatContext'
 import Alert from '@mui/material/Alert';
-import { Snackbar } from '@mui/material';
-import {NotificationContext} from '../context/NotificationContext'
+import { Box, CircularProgress, Snackbar } from '@mui/material';
+import { NotificationContext } from '../context/NotificationContext'
 
-const Sidebar = ({ setSelectedConversation, messages,socket}) => {
+const Sidebar = ({ setSelectedConversation, messages, socket }) => {
   const { user } = useAuth();
   //group
   const [groupChatName, setGroupChatName] = useState('');
@@ -18,17 +18,18 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
   const [successCreateGroup, setSuccessCreateGroup] = useState(false);
   const [errorCreateGroup, setErrorCreateGroup] = useState(false);
   const inputSearch = useRef();
-  const {conversationState,conversationDispatch} = useContext(ChatContext);
+  const { conversationState, conversationDispatch } = useContext(ChatContext);
   const notificationContext = useContext(NotificationContext);
+  const [loading, setLoading] = useState(false);
 
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
-        return;
+      return;
     }
     setSuccessCreateGroup(false);
     setSuccessCreateGroup(false);
-};
+  };
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -38,12 +39,14 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
   };
 
   const getList = async () => {
-    conversationDispatch({type: "GET_CHATS_START"});
+    conversationDispatch({ type: "GET_CHATS_START" });
+    setLoading(true);
     try {
       const { data } = await axios.get("/api/chats", config);
-      conversationDispatch({type: "GET_CHATS_SUCCESS",payload:data});
+      conversationDispatch({ type: "GET_CHATS_SUCCESS", payload: data });
+      setLoading(false);
     } catch (error) {
-      conversationDispatch({type: "GET_CHATS_FAILURE"});
+      conversationDispatch({ type: "GET_CHATS_FAILURE" });
       console.log(error);
     }
   }
@@ -92,7 +95,7 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
     }
     try {
       const { data } = await axios.post("/api/chats/group", jsonData, config);
-      socket.emit('create group',data);
+      socket.emit('create group', data);
       setListMember([...listMember, data]);
       setSelectedConversation(data);
       setListMember([]);
@@ -102,11 +105,11 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
       console.log(error);
     }
   }
-  useEffect(()=>{
-    socket?.on('notification new group',data=>{
+  useEffect(() => {
+    socket?.on('notification new group', data => {
       getList();
     })
-  },[]);
+  }, []);
 
   useEffect(() => {
     getList();
@@ -173,7 +176,9 @@ const Sidebar = ({ setSelectedConversation, messages,socket}) => {
         </div>
       </div>
       <Search setSelectedConversation={setSelectedConversation} />
-
+      {loading && <Box sx={{ display: 'flex' }}>
+        <CircularProgress />
+      </Box>}
       <div className='list-group'>
         {conversationState.chats.map(c => (
           <div key={c._id} onClick={() => {

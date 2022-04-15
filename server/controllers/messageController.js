@@ -177,11 +177,32 @@ module.exports.sendMessageFile = async (req,res)=>{
 }
 
 module.exports.getAllMessage = async (req,res)=>{
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    const startIndex = (page -1) * limit;
+    const endIndex = page * limit;
+    const result = {};
+    
     try {
+        const listMessage = await Message.find({conversation_id:req.params.conversationId});
+        if(startIndex > 0){
+            result.previous = {
+                page:page-1,
+                limit:limit 
+            }
+        }
+        if(endIndex < listMessage.length){
+            result.next = {
+                page:page+1,
+                limit:limit 
+            }
+        }
+
         const messages = await Message.find({conversation_id:req.params.conversationId})
                 .populate("sender_id","first_name last_name image_url email")
-                .populate('conversation_id');
-        res.status(200).json(messages);
+                .populate('conversation_id')
+        result.result = messages;
+        res.status(200).json(result);
     } catch (error) {
         res.status(500).json(error);
     }

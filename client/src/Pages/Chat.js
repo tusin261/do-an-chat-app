@@ -17,6 +17,8 @@ import DuoOutlinedIcon from '@mui/icons-material/DuoOutlined';
 import InfoConversation from '../components/InfoConversation';
 import { NotificationContext } from '../context/NotificationContext'
 import { ChatContext } from '../context/ChatContext'
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { Box, CircularProgress } from '@mui/material';
 let socket;
 const Chat = () => {
   const { user } = useAuth();
@@ -26,6 +28,9 @@ const Chat = () => {
   const notificationContext = useContext(NotificationContext);
   const { conversationState, conversationDispatch } = useContext(ChatContext);
   const { chats } = conversationState;
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(2);
+  const [loading, setLoading] = useState(false);
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   axios.defaults.baseURL = "http://localhost:5000";
@@ -82,7 +87,7 @@ const Chat = () => {
     }
   }
 
-  const sendMessageVideo = async (e)=>{
+  const sendMessageVideo = async (e) => {
     const fileSelected = e.target.files[0];
     const config = {
       headers: {
@@ -121,9 +126,11 @@ const Chat = () => {
 
   const getList = async () => {
     conversationDispatch({ type: "GET_CHATS_START" });
+    setLoading(true);
     try {
       const { data } = await axios.get("/api/chats", config);
       conversationDispatch({ type: "GET_CHATS_SUCCESS", payload: data });
+      setLoading(false);
     } catch (error) {
       conversationDispatch({ type: "GET_CHATS_FAILURE" });
       console.log(error);
@@ -135,14 +142,35 @@ const Chat = () => {
       getList();
     } else {
       const receiver = newMessage.conversation_id.member.find(i => i._id !== user._id);
+      setLoading(true);
       try {
         const { data } = await axios.post("/api/chats", { userId: receiver._id }, config);
         getList();
+        setLoading(false);
       } catch (error) {
         console.log(error);
       }
     }
 
+  }
+  const getListMessage = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`/api/messages/${selectedConversation._id}?limit=10&page=${page}`, config);
+      setMessages((preList) => [...preList, ...response.data.result]);
+      if (response.data.result.length === 0 || response.data.result.length < 10) {
+        setHasMore(false);
+      }
+      setPage((prePage) => prePage + 1);
+      setLoading(false);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const fetchData = () => {
+    getListMessage()
   }
 
   useEffect(() => {
@@ -165,11 +193,13 @@ const Chat = () => {
   }, [selectedConversation]);
 
   useEffect(() => {
+    setLoading(true);
     if (selectedConversation) {
       const getMessage = async () => {
         try {
-          const { data } = await axios.get(`/api/messages/${selectedConversation._id}`, config);
-          setMessages(data);
+          const response = await axios.get(`/api/messages/${selectedConversation._id}?limit=10&page=1`, config);
+          setMessages(response.data.result);
+          setLoading(false);
         } catch (error) {
           console.log(error);
         }
@@ -210,11 +240,11 @@ const Chat = () => {
     })
   }, [messages])
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
+  // useEffect(() => {
+  //   if (scrollRef.current) {
+  //     scrollRef.current.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // }, [messages]);
 
 
   return (
@@ -222,19 +252,37 @@ const Chat = () => {
       <div className='row'>
         <Topbar socket={socket} />
       </div>
-      <div className='row justify-content-between h-100'>
-        <div className='col-lg-3 vh-100 overflow-auto border rounded'>
+      <div className='row justify-content-between'>
+        <div className='col-lg-3 overflow-auto border rounded box-sidebar'>
           <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} socket={socket} />
         </div>
-        <div className='col-lg-9'>
+        <div className='col-lg-9 vh-100'>
           {selectedConversation && <InfoConversation setSelectedConversation={setSelectedConversation} selectedConversation={selectedConversation} socket={socket} />}
-          <div className='box-chat overflow-auto border rounded'>
-            {messages.map(i => (
-              <div key={i._id} ref={scrollRef}>
-                <Message message={i} own={i.sender_id._id == user._id} />
-              </div>
-            ))}
+          <div className='box-chat border rounded'>
+            <InfiniteScroll
+              dataLength={messages.length} //This is important field to render the next data
+              next={fetchData}
+              hasMore={hasMore}
+              loader={<h4>Loading...</h4>}
+              endMessage={
+                <p style={{ textAlign: 'center' }}>
+                  <b>Yay! You have seen it all</b>
+                </p>
+              }>
+              {loading && <Box sx={{ display: 'flex' }}>
+                <CircularProgress />
+              </Box>}
+              {messages.map(i => (
+                <div className='px-2' key={i._id} ref={scrollRef}>
+                  <Message message={i} own={i.sender_id._id == user._id} />
+                </div>
+              ))}
+            </InfiniteScroll>
+
+
+
           </div>
+
           {selectedConversation &&
             <div className='d-flex justify-content-between align-items-center'>
               <input type='text' className="form-control w-65"
@@ -247,7 +295,7 @@ const Chat = () => {
               <label htmlFor='filekhac'><AttachFileOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>
               <span data-bs-toggle="dropdown"><MoreHorizOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></span>
               <div className="dropdown-menu">
-                <input type='file' id='video' className='d-none' onChange={sendMessageVideo}/>
+                <input type='file' id='video' className='d-none' onChange={sendMessageVideo} />
                 <span className="dropdown-item" ><label htmlFor='video'><VideoFileOutlinedIcon /> Gui video</label></span>
                 <span className="dropdown-item" ><LocalPhoneOutlinedIcon /> Goi dien</span>
                 <span className="dropdown-item"><DuoOutlinedIcon /> Goi video</span>

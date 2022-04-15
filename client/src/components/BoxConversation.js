@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import useAuth from '../context/AuthContext';
 import {NotificationContext} from '../context/NotificationContext'
+import { formatDate } from '../services/Format/FormatDateAndTime'
 
 const BoxConversation = ({con}) => {
   const {user} = useAuth();
@@ -11,6 +12,7 @@ const BoxConversation = ({con}) => {
   const getImageConversation = (user,conversation)=>{
     return conversation.member[0]._id===user._id?conversation.member[1].image_url:conversation.member[0].image_url;
   }
+  console.log(con)
   return (
     <div className='col-lg-12 p-2'>
       <div className="d-flex w-100 justify-content-between align-items-center">
@@ -25,7 +27,7 @@ const BoxConversation = ({con}) => {
         </div>
         <div className='d-flex flex-column align-items-end'>
           <div>
-            <p>09:00</p>  
+            <p>{con.latestMessage && formatDate(con.latestMessage.createdAt)}</p>  
           </div>
           <div>
           {notificationContext.notifications.filter(e=>e.type == 'text').some(i=>i.id === con._id) && <p className='mb-0 text-danger'>1</p>}

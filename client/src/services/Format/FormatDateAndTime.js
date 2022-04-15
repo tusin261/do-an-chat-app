@@ -19,7 +19,7 @@ function formatDate(value1) {
     const rs = Math.ceil(diffTime / milliseconds_per_day);
     if (rs > 7) {
         return v1.toLocaleDateString("vi-VN");
-    } else if (rs <= milliseconds_per_day) {
+    } else if (rs <= 1) {
         return "Hom nay, " + formatAMPM(v1);
     } else {
         return `${rs} ngay truoc`;
