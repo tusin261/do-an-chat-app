@@ -3,11 +3,11 @@ import { formatDate } from '../services/Format/FormatDateAndTime'
 import "../components/Chat.css";
 import { Button, Modal } from 'react-bootstrap';
 import ModalImage from './ModalImage';
+import { Tooltip } from '@mui/material';
 
-const Message = ({ message, own }) => {
+const Message = ({ message, own, lastMessage }) => {
     const [show, setShow] = useState(false);
     const [clickedImage, setClickedImage] = useState(null);
-
     const showModalImage = (value) => {
         setClickedImage(value);
         setShow(true);
@@ -35,14 +35,15 @@ const Message = ({ message, own }) => {
         return infoFile;
     }
     return (
-        <div className={own?"d-flex justify-content-end":'d-flex'}>
-            <div className={own ? 'col-lg-6 d-flex flex-row-reverse' : 'col-lg-6 d-flex'}>
-                <div className='pt-3'>
-                    <img width="48" height="48" className='rounded-circle' alt="100x100" src={message.sender_id.image_url} />
+        <div className={own ? "d-flex justify-content-end" : 'd-flex'}>
+            <div className={own ? 'col-lg-6 d-flex flex-row-reverse align-items-start' : 'col-lg-6 d-flex align-items-end'}>
+                <div className={own ?'pt-2':undefined}>
+                    <img width="32" height="32" className='rounded-circle' alt="100x100" src={message.sender_id.image_url} />
                 </div>
                 {own ?
+                <Tooltip title={formatDate(message.createdAt)} placement="left">
                     <div className='ms-2 p-2'>
-                        <h6 className='mb-0 p-1 text-end small'>{formatDate(message.createdAt)}</h6>
+                        {/* <h6 className='mb-0 p-1 text-end small'>{formatDate(message.createdAt)}</h6> */}
                         {message.type == 'text' && <p className='mb-0 bg-primary p-1 rounded text-dark text-center'>{message.content}</p>}
                         {message.type == 'image' && <img width="150" height="150" src={message.content}
                             className='mb-0 p-1 img-thumbnail'
@@ -58,9 +59,11 @@ const Message = ({ message, own }) => {
                             <source src={message.content} type="video/mp4" />
                         </video>}
                         <h6 className='mb-0 p-1 text-end small'>Da xem</h6>
-                    </div> :
-                    <div className='ms-2 p-2'>
-                        <h6 className='mb-0 p-1 text-start small'>{message.sender_id.first_name}, {formatDate(message.createdAt)}</h6>
+                        {/* {lastMessage && <h6 className='mb-0 p-1 text-end small'>Da xem</h6>} */}
+                    </div></Tooltip> :
+                    <Tooltip title={formatDate(message.createdAt)} placement="right">
+                    <div className='ms-2'>
+                        <h6 className='mb-0 p-1 text-start small'>{message.sender_id.first_name}</h6>
                         {message.type == 'text' && <p className='mb-0 bg-light p-1 rounded text-dark text-center'>{message.content}</p>}
                         {message.type == 'image' && <img width="150" height="150"
                             src={message.content}
@@ -76,8 +79,9 @@ const Message = ({ message, own }) => {
                         {message.type == 'video' && <video width="250" height="150" controls>
                             <source src={message.content} type="video/mp4" />
                         </video>}
-                        <h6 className='mb-0 p-1 text-start small'>Da xem</h6>
-                    </div>}
+                        {/* <h6 className='mb-0 p-1 text-start small'>Da xem</h6> */}
+                        {/* {lastMessage && <h6 className='mb-0 p-1 text-start small'>Da xem</h6>} */}
+                    </div></Tooltip>}
                 {show && <ModalImage show={show} onHide={() => setShow(false)} image={clickedImage} />}
             </div>
         </div>

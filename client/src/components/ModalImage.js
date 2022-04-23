@@ -9,7 +9,7 @@ const ModalImage = ({ show, onHide, image }) => {
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
                 <Modal.Title id="contained-modal-title-vcenter">
-                    Deposit Record
+                    Image
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>

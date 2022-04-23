@@ -12,7 +12,8 @@ const conversationSchema = mongoose.Schema({
     },
     creator: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     group_image:{
-        type:String
+        type:String,
+        default:"https://d3pgq3xdjygd77.cloudfront.net/image_group.jpg"
     }
 }, { timestamps: true });
 

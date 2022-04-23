@@ -29,10 +29,14 @@ const Chat = () => {
   const { conversationState, conversationDispatch } = useContext(ChatContext);
   const { chats } = conversationState;
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(2);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [lastMessage, setLastMessage] = useState(null);
+  const [listImage, setListImage] = useState([]);
+  const [listFile, setListFile] = useState([]);
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
+  const inputMessageRef = useRef()
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -47,9 +51,10 @@ const Chat = () => {
         conversation_id: selectedConversation._id,
         type: 'text'
       }, config);
-      console.log(data);
       socket.emit('send message', data);
       setMessages([...messages, data]);
+      inputMessageRef.current.focus();
+      setNewMessage('')
     } catch (error) {
       console.log(error);
     }
@@ -114,23 +119,27 @@ const Chat = () => {
       console.log(error);
     }
   }
-  const handleSendMessage = (e) => {
-    if (e.keyCode === 13 && newMessage !== '') {
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && newMessage !== '') {
       sendMessage();
     }
+  }
+  const handleSendMessage = () => {
     sendMessage();
   }
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
   }
 
+  const handleKeyUp = (e) => {
+    //setSeenMessage()
+  }
+
   const getList = async () => {
     conversationDispatch({ type: "GET_CHATS_START" });
-    setLoading(true);
     try {
       const { data } = await axios.get("/api/chats", config);
       conversationDispatch({ type: "GET_CHATS_SUCCESS", payload: data });
-      setLoading(false);
     } catch (error) {
       conversationDispatch({ type: "GET_CHATS_FAILURE" });
       console.log(error);
@@ -142,7 +151,6 @@ const Chat = () => {
       getList();
     } else {
       const receiver = newMessage.conversation_id.member.find(i => i._id !== user._id);
-      setLoading(true);
       try {
         const { data } = await axios.post("/api/chats", { userId: receiver._id }, config);
         getList();
@@ -153,26 +161,13 @@ const Chat = () => {
     }
 
   }
-  const getListMessage = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`/api/messages/${selectedConversation._id}?limit=10&page=${page}`, config);
-      setMessages((preList) => [...preList, ...response.data.result]);
-      if (response.data.result.length === 0 || response.data.result.length < 10) {
-        setHasMore(false);
-      }
-      setPage((prePage) => prePage + 1);
-      setLoading(false);
 
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const fetchData = () => {
-    getListMessage()
-  }
-
+  // const handleScroll = (e) => {
+  //   if (e.target.scrollTop <= 0) {
+  //     setPage(page + 1);
+  //     getMessage()
+  //   }
+  // }
   useEffect(() => {
     socket = io("http://localhost:5000");
   }, [])
@@ -192,23 +187,26 @@ const Chat = () => {
     }
   }, [selectedConversation]);
 
+  const getMessage = async () => {
+    try {
+      const { data } = await axios.get(`/api/messages/${selectedConversation._id}`, config);
+      setMessages(data);
+      //setLastMessage(data.pop());
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }
   useEffect(() => {
-    setLoading(true);
+    //setLoading(true);
     if (selectedConversation) {
-      const getMessage = async () => {
-        try {
-          const response = await axios.get(`/api/messages/${selectedConversation._id}?limit=10&page=1`, config);
-          setMessages(response.data.result);
-          setLoading(false);
-        } catch (error) {
-          console.log(error);
-        }
-      }
       getMessage();
       selectedChatCompare.current = selectedConversation;
     }
   }, [selectedConversation])
 
+
+  //New messge 
   useEffect(() => {
     socket.on('new message', (newMess) => {
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
@@ -225,6 +223,7 @@ const Chat = () => {
   }, [messages])
 
 
+  //New messge group
   useEffect(() => {
     socket.on('new message group', (newMess) => {
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
@@ -240,11 +239,21 @@ const Chat = () => {
     })
   }, [messages])
 
-  // useEffect(() => {
-  //   if (scrollRef.current) {
-  //     scrollRef.current.scrollIntoView({ behavior: "smooth" });
-  //   }
-  // }, [messages]);
+  useEffect(() => {
+    if (messages.length > 0) {
+      const images = messages.filter(i => i.type == 'image');
+      const files = messages.filter(i => i.type == 'file');
+      setListImage(images);
+      setListFile(files);
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      console.log('scrool')
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages,newMessage]);
 
 
   return (
@@ -257,37 +266,29 @@ const Chat = () => {
           <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} socket={socket} />
         </div>
         <div className='col-lg-9 vh-100'>
-          {selectedConversation && <InfoConversation setSelectedConversation={setSelectedConversation} selectedConversation={selectedConversation} socket={socket} />}
+          {selectedConversation && <InfoConversation
+            setSelectedConversation={setSelectedConversation}
+            selectedConversation={selectedConversation}
+            socket={socket} listImage={listImage} listFile={listFile} />}
           <div className='box-chat border rounded'>
-            <InfiniteScroll
-              dataLength={messages.length} //This is important field to render the next data
-              next={fetchData}
-              hasMore={hasMore}
-              loader={<h4>Loading...</h4>}
-              endMessage={
-                <p style={{ textAlign: 'center' }}>
-                  <b>Yay! You have seen it all</b>
-                </p>
-              }>
-              {loading && <Box sx={{ display: 'flex' }}>
-                <CircularProgress />
-              </Box>}
-              {messages.map(i => (
-                <div className='px-2' key={i._id} ref={scrollRef}>
-                  <Message message={i} own={i.sender_id._id == user._id} />
-                </div>
-              ))}
-            </InfiniteScroll>
-
-
+            {messages.map(i => (
+              <div className='p-2' key={i._id}>
+                <Message message={i} own={i.sender_id._id == user._id} lastMessage={lastMessage} />
+                <div ref={scrollRef}></div>
+              </div>
+            ))}
 
           </div>
 
           {selectedConversation &&
-            <div className='d-flex justify-content-between align-items-center'>
+            <div className='mt-1 d-flex justify-content-between align-items-center'>
               <input type='text' className="form-control w-65"
                 value={newMessage}
-                onChange={handleTyping} placeholder="Nhập gì đó ...." />
+                onChange={handleTyping}
+                ref={inputMessageRef}
+                onKeyUp={handleKeyUp}
+                onKeyPress={handleKeyPress}
+                placeholder="Nhập gì đó ...." />
               <button className='btn btn-primary' onClick={handleSendMessage}><SendOutlinedIcon /></button>
               <input type='file' id='hinhanh' className='d-none' onChange={sendMessageImage} />
               <label htmlFor='hinhanh'><ImageOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>

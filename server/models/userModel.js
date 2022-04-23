@@ -26,7 +26,8 @@ const userSchema = mongoose.Schema({
         type:Boolean,
     },
     image_url:{
-        type:String
+        type:String,
+        default:"https://d3pgq3xdjygd77.cloudfront.net/user-avatar.png"
     },
     sent_request:{
         type:Array

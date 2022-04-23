@@ -185,7 +185,6 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
             handleClickConversation(c)
           }}>
             <BoxConversation con={c} />
-
           </div>
         ))}
       </div>

@@ -59,7 +59,7 @@ const Search = ({setSelectedConversation}) => {
                     {listResult.length > 0 && listResult.map((item, index) => (
                         <li className="list-group-item" key={index} onClick={()=>handleClick(item)}>
                             <div className="d-flex w-100 align-items-center">
-                                <img width="64" height="64" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
+                                <img width="64" height="64" className='rounded-circle' alt="100x100" src={item.image_url} />
                                 <div className='ms-3'>
                                     <p>{item.last_name} {item.first_name}</p>
                                     <p>{item.email}</p>
