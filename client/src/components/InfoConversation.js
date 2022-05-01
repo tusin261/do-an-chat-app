@@ -8,6 +8,7 @@ import axios from 'axios';
 import {NotificationContext} from '../context/NotificationContext'
 import ModalDetailConversation from './ModalDetailConversation';
 import ModalVideoChat from './ModalVideoChat';
+import Avatar from '@mui/material/Avatar';
 
 const InfoConversation = ({ selectedConversation, setSelectedConversation,socket,listImage,listFile }) => {
     const { user } = useAuth();
@@ -16,21 +17,29 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
     const [showDetailConversation, setShowDetailConversation] = useState(false);
     //video call
     const [showVideoCall,setShowVideoCall] = useState(false)
+    const [isCaller,setIsCaller] = useState(false);
+    const [receiverCall,setReceiverCall] = useState();
 
-    //conversationState,conversationDispatch
-    const notificationContext = useContext(NotificationContext);
+    //ng nhan
+    const [signalOfCaller,setSignalOfCaller] = useState();
+    const [caller,setCaller] = useState();
 
-    axios.defaults.baseURL = "http://localhost:5000";
-    const config = {
-        headers: {
-            "Content-type": "application/json",
-            "Authorization": `Bearer ${user.accessToken}`
-        },
-    };
+    useEffect(()=>{
+        socket.on('call',data=>{
+            setSignalOfCaller(data.signal);
+            setCaller(data.from);
+        })
+    },[])
+
+    const acceptCall = ()=>{
+        setShowVideoCall(true); 
+        setIsCaller(false);
+    }
+
     const callVideo = ()=>{
-        
-        setShowVideoCall(true);
-        
+        setShowVideoCall(true); 
+        setReceiverCall(selectedConversation.member.find(i=> i._id != user._id));
+        setIsCaller(true);
     }
     const showDetailModal = ()=>{
         setShowDetailConversation(true);
@@ -41,27 +50,18 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
     const getImageConversation = (user,conversation)=>{
         return conversation.member[0]._id===user._id?conversation.member[1].image_url:conversation.member[0].image_url;
       }
-    // const handleClickItemInList = (item) => {
-    //     const existedMember = listMember.find(i => i._id === item._id);
-    //     const existedMemberinConversation = selectedConversation.member.find(i => i._id === item._id);
-    //     if (existedMember || existedMemberinConversation) {
-    //         setError(true);
-    //         return;
-    //     } else {
-    //         setListMember([...listMember, item]);
-    //         setListResult([]);
-    //         inputSearch.current.value = '';
-    //     }
-    // }
 
     return (
         <div className='col-lg-12 border rounded'>
             <div className='w-100 d-flex justify-content-between align-items-center'>
                 <div className='d-flex p-2'>
-                    <img width="42" height="42" className='rounded-circle' alt="100x100" src={selectedConversation.isGroupChat?selectedConversation.group_image:getImageConversation(user,selectedConversation)} />
+                <Avatar sx={{ width: 42, height: 42 }} alt="avata" src={selectedConversation.isGroupChat?selectedConversation.group_image:getImageConversation(user,selectedConversation)} />
+
+                    {/* <img width="42" height="42" className='rounded-circle' alt="100x100" src={selectedConversation.isGroupChat?selectedConversation.group_image:getImageConversation(user,selectedConversation)} /> */}
                     <div className='ms-2'>
                         <h5 className='mb-0'>{!selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name}</h5>
                         <span><FiberManualRecordIcon style={{ fontSize: 16, color: "#B6FFCE" }} /></span>
+                        {caller && <><p>{caller.first_name} is calling</p> <button onClick={acceptCall}>Chap nhan</button></>}
                     </div>
                 </div>
                 <div className='d-flex align-items-center'>
@@ -76,8 +76,11 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                         listImage={listImage} 
                         listFile={listFile} socket={socket} />}
                     {showVideoCall && <ModalVideoChat showVideoCall={showVideoCall} 
-                                                        onHide={() => setShowVideoCall(false)}
-                                                        socket={socket} />}
+                                                onHide={() => setShowVideoCall(false)}
+                                                socket={socket} isCaller={isCaller} 
+                                                receiverCall={receiverCall} 
+                                                signalOfCaller={signalOfCaller} 
+                                                caller={caller} selectedConversation={selectedConversation}/>}
                 </div>
             </div>
         </div>

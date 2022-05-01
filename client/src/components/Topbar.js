@@ -5,15 +5,20 @@ import { BaseURL } from '../constants/path_constant';
 import axios from 'axios';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { NotificationContext } from '../context/NotificationContext';
-import { Badge } from '@mui/material';
-const Topbar = ({socket}) => {
+import { Badge, Menu } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Notification from './Notification';
+
+const Topbar = ({ socket }) => {
   const { user, dispatch } = useAuth();
   const imageURL = BaseURL.PUBLIC_FOLDER_IMAGE;
   const imageInput = useRef();
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState();
-  const [invi,setInvi] = useState(true);
-  const notificationContext = useContext(NotificationContext);
+  const [invi, setInvi] = useState(true);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
 
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
@@ -34,27 +39,27 @@ const Topbar = ({socket}) => {
     }
   }, [selectedImage]);
 
-  useEffect(()=>{
-    socket?.on('notification new group',data=>{
+  useEffect(() => {
+    socket?.on('notification new group', data => {
       setInvi(false);
       const dataNotification = {
-        id:data._id,
-        type:'group',
-        message:`Bạn được thêm vào nhóm ${data.chat_name}`
+        id: data._id,
+        type: 'group',
+        message: `Bạn được thêm vào nhóm ${data.chat_name}`
       }
-      notificationContext.setNotifications([...notificationContext.notifications,dataNotification]);
+      // notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
     })
   })
 
-  useEffect(()=>{
-    socket?.on('notification out group',updatedConversation=>{
+  useEffect(() => {
+    socket?.on('notification out group', updatedConversation => {
       setInvi(false);
       const dataNotification = {
-        id:updatedConversation.data._id,
-        type:'group',
+        id: updatedConversation.data._id,
+        type: 'group',
         message: `${updatedConversation.name} đã rời nhóm ${updatedConversation.data.chat_name}`
       }
-      notificationContext.setNotifications([...notificationContext.notifications,dataNotification]);
+      // notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
     })
   })
 
@@ -87,33 +92,37 @@ const Topbar = ({socket}) => {
       setSelectedImage(null);
     }
   }
-  const handleSeenNotification = ()=>{
-    setInvi(true);
+  const handleSeenNotification = (event) => {
+    setAnchorEl(event.currentTarget);
   }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   return (
     <nav className='navbar navbar-expand-lg'>
       <a href='#' className='navbar-brand'>Test</a>
       <div className='collapse navbar-collapse '>
         <ul className='navbar-nav ms-auto d-flex col-1 justify-content-between align-items-center'>
-          <li className='nav-item'><span data-bs-toggle="dropdown" role="button">
+          <li className='nav-item'><span role="button">
             <Badge color="error" variant="dot" invisible={invi}>
-              <NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} onClick={handleSeenNotification}/> 
+              <NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} onClick={handleSeenNotification} />
             </Badge></span>
-            <div className="dropdown-menu dropdown-menu-end py-0">
-              <ul className="list-group">
-                {notificationContext.notifications.filter(e=>e.type == 'group').map((item,index) => (
-                  <li key={index} className="list-group-item">{item.message}</li>
-                ))}
-                <button className='btn btn-link'>Đánh dấu tất cả là đã đọc</button>
-              </ul> 
-            </div>
+            <Menu
+              id="notification"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              <Notification />
+            </Menu>
           </li>
           <li className='nav-item'>
-            <img id="imageDropdown" data-bs-toggle="dropdown" width="32" height="32" className='rounded-circle' alt="100x100" src={user.image_url ? user.image_url : imageURL + "userDefault.png"} />
+            <Avatar id="imageDropdown" data-bs-toggle="dropdown" sx={{ width: 32, height: 32 }} src={user.image_url ? user.image_url : imageURL + "userDefault.png"} />
             <div className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
               <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">Thông tin cá nhân</a>
               <a className="dropdown-item" href="#">Đăng xuất</a>
-
             </div>
             <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div className="modal-dialog">

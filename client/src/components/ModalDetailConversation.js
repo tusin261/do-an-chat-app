@@ -12,6 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import ListImage from './ListImage';
 import ListFile from './ListFile';
 import { ChatContext } from '../context/ChatContext'
+import Avatar from '@mui/material/Avatar';
 
 const ModalDetailConversation = ({ showDetailConversation,
     onHide,
@@ -22,7 +23,7 @@ const ModalDetailConversation = ({ showDetailConversation,
     const [preview, setPreview] = useState();
     const [selectedImage, setSelectedImage] = useState(null);
     const { user } = useAuth();
-    const [groupChatName, setGroupChatName] = useState();
+    const [groupChatName, setGroupChatName] = useState(selectedConversation.chat_name);
     const [listResult, setListResult] = useState([]);
     const [listMember, setListMember] = useState([]);
     const [error, setError] = useState(false);
@@ -207,10 +208,12 @@ const ModalDetailConversation = ({ showDetailConversation,
                 <div className="container-fluid">
                     <div className='row justify-content-center'>
                         <div className='col-lg-10 d-flex flex-column align-items-center'>
-                            <img width="64" height="64" className='rounded-circle' alt="100x100" src={preview ? preview : getImageForTypeChat(selectedConversation)} />
+                            <Avatar sx={{ width: 64, height: 64 }} alt="avata" src={preview ? preview : getImageForTypeChat(selectedConversation)} />
+
+                            {/* <img width="64" height="64" className='rounded-circle' alt="100x100" src={preview ? preview : getImageForTypeChat(selectedConversation)} /> */}
                             {selectedConversation.isGroupChat && <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />}
-                            {selectedConversation.isGroupChat && <div className='d-flex'>
-                                <button className='btn btn-primary' onClick={chooseImage}>Chọn ảnh nhóm</button>
+                            {selectedConversation.isGroupChat && <div className='d-flex mt-2'>
+                                <button className='btn btn-primary me-2' onClick={chooseImage}>Chọn ảnh nhóm</button>
                                 {selectedImage && <button className='btn btn-primary' onClick={submitImageGroup}>Đổi ảnh nhóm</button>}
                             </div>}
                             {selectedConversation.isGroupChat && <p className='mb-0'>Nhóm được tạo bởi {selectedConversation.creator.first_name}</p>}
@@ -222,7 +225,7 @@ const ModalDetailConversation = ({ showDetailConversation,
                                 <label className="form-label">Tên cuộc trò chuyện</label>
                                 <input type="text" className="form-control" value={groupChatName}
                                     onChange={(e) => setGroupChatName(e.target.value)} />
-                                <div className="input-group-append">
+                                <div className="input-group-append my-2">
                                     <button className='btn btn-primary' onClick={handleChangeName}>Thay Đổi</button>
                                 </div>
                             </div>
@@ -234,16 +237,22 @@ const ModalDetailConversation = ({ showDetailConversation,
                             <ul className='list-group px-0'>
                                 {(selectedConversation.member).map((item, index) => (
                                     <li className="list-group-item" key={index}>
-                                        <div className="d-flex w-100 align-items-center">
-                                            <img width="32" height="32" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
-                                            <div className='ms-3'>
-                                                <p>{item.last_name} {item.first_name}</p>
-                                                <p className='mb-0'>{item.email}</p>
+                                        <div className='row'>
+                                            <div className='col-lg-12 d-flex align-items-center'>
+                                                <div className='col-lg-2'>
+                                                    <Avatar sx={{ width: 32, height: 32 }} alt="avata" src={item.image_url} />
+                                                </div>
+                                                <div className='col-lg-7'>
+                                                    <p>{item.last_name} {item.first_name}</p>
+                                                    <p className='mb-0'>{item.email}</p>
+                                                </div>
+                                                <div className='col-lg-3'>
+                                                    {(selectedConversation.isGroupChat && selectedConversation.creator._id === user._id)
+                                                        && <button className='btn btn-danger' onClick={() => handleDeleteMember(item)}>Xóa</button>}
+                                                </div>
                                             </div>
-
-                                            {(selectedConversation.isGroupChat && selectedConversation.creator._id === user._id)
-                                                && <button className='btn btn-danger' onClick={() => handleDeleteMember(item)}>Xóa</button>}
                                         </div>
+                                        {/* <img width="32" height="32" className='rounded-circle' alt="100x100" src={item.image_url} /> */}
                                     </li>
                                 ))}
                             </ul>

@@ -7,7 +7,7 @@ import { loginCall } from '../ApiCall';
 import { AuthContext } from "../context/AuthContext";
 import { useAuth } from "../context/hooks";
 import CircularProgress from '@mui/material/CircularProgress';
-
+import * as API from '../constants/ManageURL'
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,6 +18,7 @@ const LoginForm = () => {
   let path;
   const handleClick = async (e) => {
     e.preventDefault();
+    console.log(API.LOGIN);
     //setDisable(true);
     if (email == '' || password == '') {
       setErrorInput(true);

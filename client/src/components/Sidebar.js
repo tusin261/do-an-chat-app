@@ -6,8 +6,9 @@ import Search from './Search';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import { ChatContext } from '../context/ChatContext'
 import Alert from '@mui/material/Alert';
-import { Box, CircularProgress, Snackbar } from '@mui/material';
+import { Avatar, Box, Chip, CircularProgress, Snackbar } from '@mui/material';
 import { NotificationContext } from '../context/NotificationContext'
+import * as API from '../constants/ManageURL'
 
 const Sidebar = ({ setSelectedConversation, messages, socket }) => {
   const { user } = useAuth();
@@ -19,7 +20,6 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
   const [errorCreateGroup, setErrorCreateGroup] = useState(false);
   const inputSearch = useRef();
   const { conversationState, conversationDispatch } = useContext(ChatContext);
-  const notificationContext = useContext(NotificationContext);
   const [loading, setLoading] = useState(false);
 
 
@@ -53,8 +53,8 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
 
   const handleClickConversation = (conversations) => {
     setSelectedConversation(conversations);
-    const newListNoti = notificationContext.notifications.filter(i => i.id !== conversations._id);
-    notificationContext.setNotifications(newListNoti);
+    //   const newListNoti = notificationContext.notifications.filter(i => i.id !== conversations._id);
+    //   notificationContext.setNotifications(newListNoti);
   }
 
   const handleClickItemInList = (item) => {
@@ -95,8 +95,10 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
     }
     try {
       const { data } = await axios.post("/api/chats/group", jsonData, config);
+      // setListMember([...listMember, data]);
+      createNotification(data);
       socket.emit('create group', data);
-      setListMember([...listMember, data]);
+
       setSelectedConversation(data);
       setListMember([]);
       setSuccessCreateGroup(true);
@@ -105,11 +107,25 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
       console.log(error);
     }
   }
+
+  const createNotification = async (groupResponse) => {
+    const jsonData = {
+      type: 'add_group',
+      group: groupResponse
+    }
+    try {
+      const { data } = await axios.post(API.CREATE_NOTI_GROUP, jsonData, config);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
   useEffect(() => {
     socket?.on('notification new group', data => {
       getList();
     })
-  }, []);
+  }, [conversationState]);
 
   useEffect(() => {
     getList();
@@ -146,9 +162,10 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
                 </div>
                 <div className='mb-1 d-flex flex-wrap'>
                   {listMember.length > 0 && listMember.map((user, index) => (
-                    <div key={user._id} className='col-lg-2 bg-danger d-flex text-white p-2 border rounded'>
-                      <p className='mb-0'>{user.first_name}</p>
-                      <span className='bg-danger ms-2' onClick={() => removerFromGroup(user)}>x</span>
+                    <div className='my-1 me-1' key={user._id}>
+                      <Chip label={user.first_name}
+                        color="primary"
+                        onDelete={() => removerFromGroup(user)} avatar={<Avatar src={user.image_url} />} />
                     </div>
                   ))}
                 </div>
@@ -156,7 +173,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
                   {listResult.length > 0 && listResult.map((item, index) => (
                     <li className="list-group-item" key={index} onClick={() => handleClickItemInList(item)}>
                       <div className="d-flex w-100 align-items-center">
-                        <img width="64" height="64" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
+                        <img width="64" height="64" className='rounded-circle' alt="100x100" src={item.image_url} />
                         <div className='ms-3'>
                           <p>{item.last_name} {item.first_name}</p>
                           <p>{item.email}</p>

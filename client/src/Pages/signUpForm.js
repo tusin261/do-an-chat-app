@@ -4,6 +4,8 @@ import { Container, Button, Row, Col, Form, Alert } from 'react-bootstrap'
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 import { Snackbar } from "@mui/material";
+import * as API from '../constants/ManageURL'
+
 const SignUpForm = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -19,32 +21,26 @@ const SignUpForm = () => {
   const [open, setOpen] = useState(false);
   const [isError, setIsError] = useState(false);
   let navigate = useNavigate();
-  axios.defaults.baseURL = "http://localhost:5000";
+  //axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
       "Content-type": "application/json",
     },
   };
-  const handleClick = async () => {
-    if (!email || !password) {
-      setIsError(true);
-      return;
-    } else {
+  const handleClick = async (e) => {
+    e.preventDefault();
+    console.log(API.SIGNUP)
       try {
         const { data } = await axios.post(
-          "/api/auth/register",
+          API.SIGNUP,
           { email, password, first_name: firstName, last_name: lastName },
           config
         );
         setOpen(true);
-        let path = "/";
-        navigate(path);
       } catch (error) {
         setIsError(true);
-        let path = "/";
-        navigate(path);
       }
-    }
+    
   }
 
   const handleClose = (event, reason) => {
@@ -126,12 +122,12 @@ const SignUpForm = () => {
           <div className="card bg-dark text-white" style={{ borderRadius: '1rem' }}>
             <div className="card-body p-5 text-center">
               <div className="mb-md-5 mt-md-4 pb-5">
-                <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+                <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} open={open} autoHideDuration={2000} onClose={handleClose}>
                   <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
                     Tạo tài khoản thành công, kiểm tra email để xác thực tài khoản!
                   </Alert>
                 </Snackbar>
-                <Snackbar open={isError} autoHideDuration={6000} onClose={handleClose}>
+                <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} open={isError} autoHideDuration={2000} onClose={handleClose}>
                   <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
                     Tạo tài khoản không thành công, vui lòng thử lại!
                   </Alert>

@@ -265,7 +265,7 @@ const Chat = () => {
         <div className='col-lg-3 overflow-auto border rounded box-sidebar'>
           <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} socket={socket} />
         </div>
-        <div className='col-lg-9 vh-100'>
+        <div className='col-lg-9' style={{height:"90vh"}}>
           {selectedConversation && <InfoConversation
             setSelectedConversation={setSelectedConversation}
             selectedConversation={selectedConversation}
@@ -277,7 +277,6 @@ const Chat = () => {
                 <div ref={scrollRef}></div>
               </div>
             ))}
-
           </div>
 
           {selectedConversation &&

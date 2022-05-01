@@ -4,6 +4,7 @@ import "../components/Chat.css";
 import { Button, Modal } from 'react-bootstrap';
 import ModalImage from './ModalImage';
 import { Tooltip } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
 
 const Message = ({ message, own, lastMessage }) => {
     const [show, setShow] = useState(false);
@@ -37,51 +38,53 @@ const Message = ({ message, own, lastMessage }) => {
     return (
         <div className={own ? "d-flex justify-content-end" : 'd-flex'}>
             <div className={own ? 'col-lg-6 d-flex flex-row-reverse align-items-start' : 'col-lg-6 d-flex align-items-end'}>
-                <div className={own ?'pt-2':undefined}>
-                    <img width="32" height="32" className='rounded-circle' alt="100x100" src={message.sender_id.image_url} />
+                <div className={own ? 'pt-2' : undefined}>
+                    <Avatar sx={{ width: 32, height: 32 }} alt="avata" src={message.sender_id.image_url} />
+
+                    {/* <img width="32" height="32" className='rounded-circle' alt="100x100" src={message.sender_id.image_url} /> */}
                 </div>
                 {own ?
-                <Tooltip title={formatDate(message.createdAt)} placement="left">
-                    <div className='ms-2 p-2'>
-                        {/* <h6 className='mb-0 p-1 text-end small'>{formatDate(message.createdAt)}</h6> */}
-                        {message.type == 'text' && <p className='mb-0 bg-primary p-1 rounded text-dark text-center'>{message.content}</p>}
-                        {message.type == 'image' && <img width="150" height="150" src={message.content}
-                            className='mb-0 p-1 img-thumbnail'
+                    <Tooltip title={formatDate(message.createdAt)} placement="left">
+                        <div className='ms-2 p-2'>
+                            {/* <h6 className='mb-0 p-1 text-end small'>{formatDate(message.createdAt)}</h6> */}
+                            {message.type == 'text' && <p className='mb-0 bg-primary p-1 rounded text-dark text-center'>{message.content}</p>}
+                            {message.type == 'image' && <img width="150" height="150" src={message.content}
+                                className='mb-0 p-1 img-thumbnail'
 
-                            onClick={() => showModalImage(message.content)} />}
-                        {message.type == 'file' && <div className='border rounded box-file d-flex flex-column'>
-                            <h5 className='text-break'>{getFileName(message.content).filename}.{getFileName(message.content).filetype}</h5>
-                            <p>{getFileName(message.content).filesize}</p>
-                            <hr />
-                            <a href={message.content} target="_blank" className='btn btn-primary-outline shadow-none '><b>Download</b></a>
-                        </div>}
-                        {message.type == 'video' && <video width="250" height="150" controls>
-                            <source src={message.content} type="video/mp4" />
-                        </video>}
-                        <h6 className='mb-0 p-1 text-end small'>Da xem</h6>
-                        {/* {lastMessage && <h6 className='mb-0 p-1 text-end small'>Da xem</h6>} */}
-                    </div></Tooltip> :
+                                onClick={() => showModalImage(message.content)} />}
+                            {message.type == 'file' && <div className='border rounded box-file d-flex flex-column'>
+                                <h5 className='text-break'>{getFileName(message.content).filename}.{getFileName(message.content).filetype}</h5>
+                                <p>{getFileName(message.content).filesize}</p>
+                                <hr />
+                                <a href={message.content} target="_blank" className='btn btn-primary-outline shadow-none '><b>Download</b></a>
+                            </div>}
+                            {message.type == 'video' && <video width="250" height="150" controls>
+                                <source src={message.content} type="video/mp4" />
+                            </video>}
+                            <h6 className='mb-0 p-1 text-end small'>Da xem</h6>
+                            {/* {lastMessage && <h6 className='mb-0 p-1 text-end small'>Da xem</h6>} */}
+                        </div></Tooltip> :
                     <Tooltip title={formatDate(message.createdAt)} placement="right">
-                    <div className='ms-2'>
-                        <h6 className='mb-0 p-1 text-start small'>{message.sender_id.first_name}</h6>
-                        {message.type == 'text' && <p className='mb-0 bg-light p-1 rounded text-dark text-center'>{message.content}</p>}
-                        {message.type == 'image' && <img width="150" height="150"
-                            src={message.content}
-                            className='mb-0 p-1 img-thumbnail'
+                        <div className='ms-2'>
+                            <h6 className='mb-0 p-1 text-start small'>{message.sender_id.first_name}</h6>
+                            {message.type == 'text' && <p className='mb-0 bg-light p-1 rounded text-dark text-center'>{message.content}</p>}
+                            {message.type == 'image' && <img width="150" height="150"
+                                src={message.content}
+                                className='mb-0 p-1 img-thumbnail'
 
-                            onClick={() => showModalImage(message.content)} />}
-                        {message.type == 'file' && <div className='border rounded box-file d-flex flex-column'>
-                            <h5 className='text-break'>{getFileName(message.content).filename}.{getFileName(message.content).filetype}</h5>
-                            <p>{getFileName(message.content).filesize}</p>
-                            <hr />
-                            <a href={message.content} target="_blank" className='btn btn-primary-outline shadow-none'><b>Download</b></a>
-                        </div>}
-                        {message.type == 'video' && <video width="250" height="150" controls>
-                            <source src={message.content} type="video/mp4" />
-                        </video>}
-                        {/* <h6 className='mb-0 p-1 text-start small'>Da xem</h6> */}
-                        {/* {lastMessage && <h6 className='mb-0 p-1 text-start small'>Da xem</h6>} */}
-                    </div></Tooltip>}
+                                onClick={() => showModalImage(message.content)} />}
+                            {message.type == 'file' && <div className='border rounded box-file d-flex flex-column'>
+                                <h5 className='text-break'>{getFileName(message.content).filename}.{getFileName(message.content).filetype}</h5>
+                                <p>{getFileName(message.content).filesize}</p>
+                                <hr />
+                                <a href={message.content} target="_blank" className='btn btn-primary-outline shadow-none'><b>Download</b></a>
+                            </div>}
+                            {message.type == 'video' && <video width="250" height="150" controls>
+                                <source src={message.content} type="video/mp4" />
+                            </video>}
+                            {/* <h6 className='mb-0 p-1 text-start small'>Da xem</h6> */}
+                            {/* {lastMessage && <h6 className='mb-0 p-1 text-start small'>Da xem</h6>} */}
+                        </div></Tooltip>}
                 {show && <ModalImage show={show} onHide={() => setShow(false)} image={clickedImage} />}
             </div>
         </div>

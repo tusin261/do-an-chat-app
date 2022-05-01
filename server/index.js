@@ -8,6 +8,7 @@ const userRoute = require('./routes/userRoute');
 const authRoute = require('./routes/authRoute');
 const chatRoute = require('./routes/chatRoute');
 const messageRoute = require('./routes/messageRoute');
+const notificationRoute = require('./routes/notificationRoute');
 const PORT = process.env.PORT;
 app.use(express.urlencoded({
     extended: true
@@ -18,6 +19,7 @@ app.use('/api/users', userRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/chats', chatRoute);
 app.use('/api/messages', messageRoute);
+app.use('/api/notifications',notificationRoute);
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
         console.log('Connect successful');
@@ -125,10 +127,17 @@ io.on('connection', (socket) => {
         //   }
     });
 
+    // socket.on('callUser',(data)=>{
+    //     const receiver = data.userToCall._id;
+    //     socket.to(getUser(receiver).socketId).emit('call',{signal:data.signalData,from:data.from})
+    // });
+    // socket.on('acceptCall',(data)=>{
+    //     const receiver = data.to._id;
+    //     socket.to(getUser(receiver).socketId).emit('callAccepted', data.signal);
+    // })
     socket.on("disconnect", () => {
         console.log("a user disconnected!");
         removeUser(socket.id);
         io.emit("getUsers", users);
       });
-
 })

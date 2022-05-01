@@ -7,13 +7,14 @@ import Chat from './Pages/Chat'
 import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar';
 import Message from './components/Message';
+import Confirm from './Pages/Confirm';
 function App() {
 
   return (
     <Routes>
       <Route path="/" element={<LoginForm />}></Route>
       <Route path="/register" element={<SignUpForm />}></Route>
-      
+
       <Route path="/chat" element={
         <ProtectedRoute roleAdmin={false}>
           <Chat />
@@ -23,11 +24,17 @@ function App() {
         <ProtectedRoute roleAdmin={true} >
           <Admin />
         </ProtectedRoute>} />
-        <Route path="/topbar" element={<Topbar />}></Route>
-        <Route path="/sidebar" element={<Sidebar />}></Route>
-        <Route path="/message" element={<Message />}></Route>
+      <Route path='confirm-email/:userId' element={<Confirm />} />
+      <Route
+        path="*"
+        element={
+          <main style={{ padding: "1rem" }}>
+            <p>404</p>
+          </main>
+        }
+      />
     </Routes>
-    
+
   );
 }
 

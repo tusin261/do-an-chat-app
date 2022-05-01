@@ -1,13 +1,20 @@
-import { useState, createContext } from 'react'
+import { useState, createContext,useReducer } from 'react'
+import NotificationReducer from './NotificationReducer'
 
-const NotificationContext = createContext();
+export const NotificationContext = createContext();
 
-function NotificationProvider({ children }) {
-    const [notifications, setNotifications] = useState([]);
+const initialState = {
+    notifications: [],
+    isLoading: false,
+    isError: false,
+};
+
+export const NotificationProvider = ({ children }) =>{
+    const [notification, dispatch] = useReducer(NotificationReducer,initialState);
 
     const value = {
-        notifications,
-        setNotifications
+        notification:notification,
+        notificationDispatch:dispatch
     }
 
     return (
@@ -17,4 +24,3 @@ function NotificationProvider({ children }) {
     )
 }
 
-export { NotificationContext, NotificationProvider }
