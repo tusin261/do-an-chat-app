@@ -10,7 +10,8 @@ import ModalDetailConversation from './ModalDetailConversation';
 import ModalVideoChat from './ModalVideoChat';
 import Avatar from '@mui/material/Avatar';
 
-const InfoConversation = ({ selectedConversation, setSelectedConversation,socket,listImage,listFile }) => {
+const InfoConversation = ({ selectedConversation, setSelectedConversation,socket,
+    listImage,listFile,setMessages,messages }) => {
     const { user } = useAuth();
     // !selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name    
     const [loading, setLoading] = useState(false);
@@ -23,13 +24,6 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
     //ng nhan
     const [signalOfCaller,setSignalOfCaller] = useState();
     const [caller,setCaller] = useState();
-
-    useEffect(()=>{
-        socket.on('call',data=>{
-            setSignalOfCaller(data.signal);
-            setCaller(data.from);
-        })
-    },[])
 
     const acceptCall = ()=>{
         setShowVideoCall(true); 
@@ -74,7 +68,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                         selectedConversation={selectedConversation} 
                         setSelectedConversation={setSelectedConversation} 
                         listImage={listImage} 
-                        listFile={listFile} socket={socket} />}
+                        listFile={listFile} socket={socket} setMessages={setMessages} messages={messages} />}
                     {showVideoCall && <ModalVideoChat showVideoCall={showVideoCall} 
                                                 onHide={() => setShowVideoCall(false)}
                                                 socket={socket} isCaller={isCaller} 

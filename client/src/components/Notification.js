@@ -1,13 +1,15 @@
 import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Typography, ListItemButton, IconButton } from '@mui/material'
 import axios from 'axios';
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect,useState } from 'react'
 import { NotificationContext } from '../context/NotificationContext';
 import * as API from '../constants/ManageURL'
 import useAuth from '../context/AuthContext';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
-const Notification = () => {
+const Notification = ({ socket }) => {
     const { user } = useAuth();
+    const [oldMember, setOldMember] = useState([]);
+    const [newMember, setNewMember] = useState([]);
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -31,7 +33,8 @@ const Notification = () => {
 
     const getType = (notification) => {
         const type = notification.type;
-        if (type == 'add_group' || type == 'kick_mem' || type == 'out_group' || type == 'change_img') {
+        if (type == 'add_group' || type == 'kick_mem' || type == 'out_group' ||
+            type == 'change_img' || type == 'add_mem') {
             return 'Nhóm';
         } else {
             return 'Bạn bè'
@@ -51,7 +54,14 @@ const Notification = () => {
 
     useEffect(() => {
         getListNoti();
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        socket?.on('notification new group', data => {
+            getListNoti();
+        })
+        
+    }, [notification.notifications]);
 
     return (
         <>
@@ -74,6 +84,7 @@ const Notification = () => {
                         </ListItemButton>
                     </ListItem>
                 ))}
+
             </List>
         </>
     )

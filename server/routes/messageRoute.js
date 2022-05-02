@@ -88,6 +88,7 @@ const uploadVideo = multer({
 
 
 router.post("/",verifyTokenAndAuthorization,messageController.sendMessage);
+router.post("/notification",verifyTokenAndAuthorization,messageController.sendMessageNotification);
 router.post("/image",verifyTokenAndAuthorization,upload.single('image'),messageController.sendMessageImage);
 router.post("/file",verifyTokenAndAuthorization,uploadFile.single('anotherFile'),messageController.sendMessageFile);
 router.post("/video",verifyTokenAndAuthorization,uploadVideo.single('video'),messageController.sendMessageImageVideo);

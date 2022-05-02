@@ -3,7 +3,7 @@ import { Button, Modal } from 'react-bootstrap'
 import axios from 'axios';
 import useAuth from '../context/AuthContext';
 import Alert from '@mui/material/Alert';
-import { Snackbar } from '@mui/material';
+import { Chip, Snackbar } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,11 +13,12 @@ import ListImage from './ListImage';
 import ListFile from './ListFile';
 import { ChatContext } from '../context/ChatContext'
 import Avatar from '@mui/material/Avatar';
+import * as API from '../constants/ManageURL'
 
 const ModalDetailConversation = ({ showDetailConversation,
     onHide,
     selectedConversation,
-    setSelectedConversation, socket, listImage, listFile }) => {
+    setSelectedConversation, socket, listImage, listFile,setMessages,messages }) => {
     const inputSearch = useRef();
     const imageInput = useRef();
     const [preview, setPreview] = useState();
@@ -99,6 +100,9 @@ const ModalDetailConversation = ({ showDetailConversation,
         }
         try {
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
+            const action = 'đã bị xóa khỏi nhóm';
+            console.log('xoa tanh vien');
+            sendMessageNotificationDeleteMember(action,mem);       
             setSelectedConversation(data);
         } catch (error) {
             console.log(error);
@@ -137,6 +141,8 @@ const ModalDetailConversation = ({ showDetailConversation,
         }
         try {
             const { data } = await axios.put("/api/chats/add-group", jsonData, config);
+            const action = 'đã được thêm vào nhóm';
+            sendMessageNotification(action);           
             setSelectedConversation(data);
             setListResult([]);
             setListMember([]);
@@ -146,6 +152,36 @@ const ModalDetailConversation = ({ showDetailConversation,
             setErrorAddMember(true);
         }
     }
+
+    const sendMessageNotification = async (action) => {
+        const listMemberName = listMember.map((u)=>u.first_name);
+        try {
+          const { data } = await axios.post("/api/messages/notification", {
+            content: `${listMemberName.toString()} ${action}`,
+            conversation_id: selectedConversation._id,
+            type: 'notification'
+          }, config);
+          socket.emit('send notification', data);
+          setMessages([...messages, data]);
+        } catch (error) {
+          console.log(error);
+        }
+    }
+
+    const sendMessageNotificationDeleteMember = async (action,member) => {
+        try {
+          const { data } = await axios.post("/api/messages/notification", {
+            content: `${member.first_name} ${action}`,
+            conversation_id: selectedConversation._id,
+            type: 'notification'
+          }, config);
+          socket.emit('send notification delete member', {data,member});
+          setMessages([...messages, data]);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
@@ -165,13 +201,28 @@ const ModalDetailConversation = ({ showDetailConversation,
         }
         try {
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
-            socket.emit('out group', { data, name: user.first_name });
+            const action = 'đã rời khỏi nhóm';
+            sendMessageNotificationOutGroup(action,user);
             setSelectedConversation(null);
             getList();
         } catch (error) {
             console.log(error);
         }
     }
+
+    const sendMessageNotificationOutGroup = async (action,member) => {
+        try {
+          const { data } = await axios.post("/api/messages/notification", {
+            content: `${member.first_name} ${action}`,
+            conversation_id: selectedConversation._id,
+            type: 'notification'
+          }, config);
+          socket.emit('send notification out group', {data,member});
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
     const getList = async () => {
         conversationDispatch({ type: "GET_CHATS_START" });
         setLoading(true);
@@ -265,9 +316,14 @@ const ModalDetailConversation = ({ showDetailConversation,
                             </div>
                             <div className='mb-1 d-flex flex-wrap'>
                                 {listMember.length > 0 && listMember.map((user, index) => (
-                                    <div key={user._id} className='col-lg-2 bg-danger d-flex text-white p-2 border rounded'>
-                                        <p className='mb-0'>{user.first_name}</p>
-                                        <span className='bg-danger ms-2' onClick={() => removerFromGroup(user)}>x</span>
+                                    // <div key={user._id} className='col-lg-2 bg-danger d-flex text-white p-2 border rounded'>
+                                    //     <p className='mb-0'>{user.first_name}</p>
+                                    //     <span className='bg-danger ms-2' onClick={() => removerFromGroup(user)}>x</span>
+                                    // </div>
+                                    <div key={user._id} className='mr-1 my-2'>
+                                        <Chip label={user.first_name}
+                                            color="primary"
+                                            onDelete={() => removerFromGroup(user)} avatar={<Avatar src={user.image_url} />} />
                                     </div>
                                 ))}
                             </div>
@@ -275,7 +331,7 @@ const ModalDetailConversation = ({ showDetailConversation,
                                 {listResult.length > 0 && listResult.map((item, index) => (
                                     <li className="list-group-item" key={index} onClick={() => handleClickItemInList(item)}>
                                         <div className="d-flex w-100 align-items-center">
-                                            <img width="64" height="64" className='rounded-circle' alt="100x100" src="https://mdbootstrap.com/img/Photos/Avatars/img%20(30).jpg" />
+                                            <img width="64" height="64" className='rounded-circle' alt="100x100" src={item.image_url} />
                                             <div className='ms-3'>
                                                 <p>{item.last_name} {item.first_name}</p>
                                                 <p>{item.email}</p>

@@ -39,17 +39,17 @@ const Topbar = ({ socket }) => {
     }
   }, [selectedImage]);
 
-  useEffect(() => {
-    socket?.on('notification new group', data => {
-      setInvi(false);
-      const dataNotification = {
-        id: data._id,
-        type: 'group',
-        message: `Bạn được thêm vào nhóm ${data.chat_name}`
-      }
-      // notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
-    })
-  })
+  // useEffect(() => {
+  //   socket?.on('notification new group', data => {
+  //     setInvi(false);
+  //     const dataNotification = {
+  //       id: data._id,
+  //       type: 'group',
+  //       message: `Bạn được thêm vào nhóm ${data.chat_name}`
+  //     }
+  //     notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
+  //   })
+  // })
 
   useEffect(() => {
     socket?.on('notification out group', updatedConversation => {
@@ -115,7 +115,7 @@ const Topbar = ({ socket }) => {
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-              <Notification />
+              <Notification socket={socket} />
             </Menu>
           </li>
           <li className='nav-item'>

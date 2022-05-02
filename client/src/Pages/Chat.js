@@ -153,6 +153,7 @@ const Chat = () => {
       const receiver = newMessage.conversation_id.member.find(i => i._id !== user._id);
       try {
         const { data } = await axios.post("/api/chats", { userId: receiver._id }, config);
+        console.log(data);
         getList();
         setLoading(false);
       } catch (error) {
@@ -209,14 +210,12 @@ const Chat = () => {
   //New messge 
   useEffect(() => {
     socket.on('new message', (newMess) => {
+      console.log('a');
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        const dataNotification = {
-          id: newMess.conversation_id._id,
-          type: 'text'
-        }
-        notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
+        console.log('trong');
         updateConversation(newMess);
       } else {
+        console.log('ngoai');
         setMessages([...messages, newMess]);
       }
     })
@@ -226,14 +225,12 @@ const Chat = () => {
   //New messge group
   useEffect(() => {
     socket.on('new message group', (newMess) => {
+      console.log('e');
       if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        const dataNotification = {
-          id: newMess.conversation_id._id,
-          type: 'text'
-        }
-        notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
+        console.log('ngoai group');
         updateConversation(newMess);
       } else {
+        console.log('trong group');
         setMessages([...messages, newMess]);
       }
     })
@@ -269,9 +266,10 @@ const Chat = () => {
           {selectedConversation && <InfoConversation
             setSelectedConversation={setSelectedConversation}
             selectedConversation={selectedConversation}
-            socket={socket} listImage={listImage} listFile={listFile} />}
+            socket={socket} listImage={listImage} listFile={listFile} 
+            setMessages={setMessages} messages={messages} />}
           <div className='box-chat border rounded'>
-            {messages.map(i => (
+            {selectedConversation && messages.map(i => (
               <div className='p-2' key={i._id}>
                 <Message message={i} own={i.sender_id._id == user._id} lastMessage={lastMessage} />
                 <div ref={scrollRef}></div>

@@ -78,12 +78,43 @@ io.on('connection', (socket) => {
                 socket.to(userInList.socketId).emit("new message",newMessage);
             }
         }
-        // const conversationId = newMessage.conversation_id._id;
-        // socket.to(conversationId).emit("new message",newMessage);
+    });
+    socket.on('send notification',(newMessage)=>{
+        if(newMessage.conversation_id.isGroupChat){
+            const listReceive = newMessage.conversation_id.member;
+            const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
+            const newListReceiveOnlineNoSender = newListReceiveOnline.filter(i=>i.userId !== newMessage.sender_id._id );
+            for(let i=0;i<newListReceiveOnlineNoSender.length;i++){
+                socket.to(newListReceiveOnlineNoSender[i].socketId).emit("new message group",newMessage);
+            }
+        }
+    })
+
+    socket.on('send notification delete member',({data,member})=>{
+        
+        if(data.conversation_id.isGroupChat){
+            const listReceive = data.conversation_id.member;
+            const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
+            const newListReceiveOnlineNoSender = newListReceiveOnline.filter(i=>i.userId !== data.sender_id._id );
+            for(let i=0;i<newListReceiveOnlineNoSender.length;i++){
+                socket.to(newListReceiveOnlineNoSender[i].socketId).emit("new message group",data);
+            }
+            socket.to(getUser(member._id).socketId).emit("new message group",data);
+        }
+    })
+
+    socket.on('send notification out group',({data,member})=>{
+        if(data.conversation_id.isGroupChat){
+            const listReceive = data.conversation_id.member;
+            const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
+            const newListReceiveOnlineNoSender = newListReceiveOnline.filter(i=>i.userId !== data.sender_id._id );
+            for(let i=0;i<newListReceiveOnlineNoSender.length;i++){
+                socket.to(newListReceiveOnlineNoSender[i].socketId).emit("new message group",data);
+            }
+        }
     })
     
     socket.on('create group',(data)=>{
-        console.log(data)
         const listReceive = data.member;
         const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
         const newListReceiveOnlineNoSender = newListReceiveOnline.filter(i=>i.userId !== data.creator._id );
@@ -91,6 +122,7 @@ io.on('connection', (socket) => {
             socket.to(newListReceiveOnlineNoSender[i].socketId).emit("notification new group",data);
         }
     })
+   
 
     socket.on('out group',(conversation)=>{
         const listReceive = conversation.data.member;
