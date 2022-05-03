@@ -92,6 +92,7 @@ router.post("/notification",verifyTokenAndAuthorization,messageController.sendMe
 router.post("/image",verifyTokenAndAuthorization,upload.single('image'),messageController.sendMessageImage);
 router.post("/file",verifyTokenAndAuthorization,uploadFile.single('anotherFile'),messageController.sendMessageFile);
 router.post("/video",verifyTokenAndAuthorization,uploadVideo.single('video'),messageController.sendMessageImageVideo);
+router.post("/update-message",verifyTokenAndAuthorization,messageController.updateMessage);
 router.get("/:conversationId",verifyTokenAndAuthorization,messageController.getAllMessage);
 
 module.exports = router;

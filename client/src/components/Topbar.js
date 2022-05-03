@@ -8,8 +8,14 @@ import { NotificationContext } from '../context/NotificationContext';
 import { Badge, Menu } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Notification from './Notification';
-
-const Topbar = ({ socket }) => {
+import HomeIcon from '@mui/icons-material/Home';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import PhoneIcon from '@mui/icons-material/Phone';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import PersonPinIcon from '@mui/icons-material/PersonPin';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+const Topbar = ({ socket, setValue, value }) => {
   const { user, dispatch } = useAuth();
   const imageURL = BaseURL.PUBLIC_FOLDER_IMAGE;
   const imageInput = useRef();
@@ -19,6 +25,10 @@ const Topbar = ({ socket }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
+  const handleChange = (event, newValue) => {
+    console.log(newValue);
+    setValue(newValue);
+  };
 
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
@@ -39,17 +49,6 @@ const Topbar = ({ socket }) => {
     }
   }, [selectedImage]);
 
-  // useEffect(() => {
-  //   socket?.on('notification new group', data => {
-  //     setInvi(false);
-  //     const dataNotification = {
-  //       id: data._id,
-  //       type: 'group',
-  //       message: `Bạn được thêm vào nhóm ${data.chat_name}`
-  //     }
-  //     notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
-  //   })
-  // })
 
   useEffect(() => {
     socket?.on('notification out group', updatedConversation => {
@@ -99,71 +98,92 @@ const Topbar = ({ socket }) => {
     setAnchorEl(null);
   };
   return (
-    <nav className='navbar navbar-expand-lg'>
-      <a href='#' className='navbar-brand'>Test</a>
-      <div className='collapse navbar-collapse '>
-        <ul className='navbar-nav ms-auto d-flex col-1 justify-content-between align-items-center'>
-          <li className='nav-item'><span role="button">
-            <Badge color="error" variant="dot" invisible={invi}>
-              <NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} onClick={handleSeenNotification} />
-            </Badge></span>
-            <Menu
-              id="notification"
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-              <Notification socket={socket} />
-            </Menu>
-          </li>
-          <li className='nav-item'>
-            <Avatar id="imageDropdown" data-bs-toggle="dropdown" sx={{ width: 32, height: 32 }} src={user.image_url ? user.image_url : imageURL + "userDefault.png"} />
-            <div className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">Thông tin cá nhân</a>
-              <a className="dropdown-item" href="#">Đăng xuất</a>
+    <div className='col-md-12 py-1'>
+      <div className='row align-items-center'>
+        <div className='col-md-2'>
+          <h4>Test</h4>
+        </div>
+        <div className='col-md-8'>
+          <div className='row'>
+            <div className='d-flex justify-content-center'>
+              <Tabs value={value} onChange={handleChange} aria-label="icon tabs example">
+                <Tab icon={<HomeIcon />} aria-label="home" />
+                <Tab icon={<MailOutlineIcon />} aria-label="message" />
+              </Tabs>
             </div>
-            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div className="modal-dialog">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        </div>
+        <div className='col-md-2'>
+          <div className='row justify-content-between'>
+            <div className='col-md-7 text-end'>
+              <span role="button">
+                <Badge color="error" variant="dot" invisible={invi}>
+                  <NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} onClick={handleSeenNotification} />
+                </Badge></span>
+              <Menu
+                id="notification"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                <Notification socket={socket} />
+              </Menu>
+            </div>
+            <div className='col-md-5'>
+              <div className='row'>
+                <div className='col-md-5'>
+
+                </div>
+                <div className='col-md-1'>
+                  <Avatar id="imageDropdown" data-bs-toggle="dropdown" sx={{ width: 32, height: 32 }} src={user.image_url ? user.image_url : imageURL + "userDefault.png"} />
+                  <div className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">Thông tin cá nhân</a>
+                    <a className="dropdown-item" href="#">Đăng xuất</a>
                   </div>
-                  <div className="modal-body d-flex flex-column align-items-center">
-                    <img src={preview ? preview : user.image_url}
-                      width="64" height="64"
-                      className='mb-2 rounded-circle' alt="100x100" />
-                    <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />
-                    <button className='btn btn-primary' onClick={handleClick}>Đổi ảnh đại diện</button>
-                    <div className='container'>
-                      <div className='row'>
-                        <div className='col-md-12'>
-                          <hr />
-                          <h4>Thông tin cá nhân</h4>
-                          <form onSubmit={handleSubmit}>
-                            <div className="mb-3">
-                              <label className="form-label">Họ</label>
-                              <input type="text" className="form-control" placeholder={user.last_name} />
+                  <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div className="modal-dialog">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div className="modal-body d-flex flex-column align-items-center">
+                          <img src={preview ? preview : user.image_url}
+                            width="64" height="64"
+                            className='mb-2 rounded-circle' alt="100x100" />
+                          <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />
+                          <button className='btn btn-primary' onClick={handleClick}>Đổi ảnh đại diện</button>
+                          <div className='container'>
+                            <div className='row'>
+                              <div className='col-md-12'>
+                                <hr />
+                                <h4>Thông tin cá nhân</h4>
+                                <form onSubmit={handleSubmit}>
+                                  <div className="mb-3">
+                                    <label className="form-label">Họ</label>
+                                    <input type="text" className="form-control" placeholder={user.last_name} />
+                                  </div>
+                                  <div className="mb-3">
+                                    <label className="form-label">Tên</label>
+                                    <input type="text" className="form-control" placeholder={user.first_name} />
+                                  </div>
+                                  <button type="submit" className="btn btn-primary" data-bs-dismiss="modal">Lưu thay đổi</button>
+                                </form>
+                              </div>
                             </div>
-                            <div className="mb-3">
-                              <label className="form-label">Tên</label>
-                              <input type="text" className="form-control" placeholder={user.first_name} />
-                            </div>
-                            <button type="submit" className="btn btn-primary" data-bs-dismiss="modal">Lưu thay đổi</button>
-                          </form>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
             </div>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
-    </nav>
+    </div>
   )
 }
 

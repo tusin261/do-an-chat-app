@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import Message from '../components/Message';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import Feed from '../components/Feed';
 import useAuth from '../context/AuthContext'
 import "../components/Chat.css";
 import axios from 'axios';
@@ -27,13 +28,12 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState('');
   const notificationContext = useContext(NotificationContext);
   const { conversationState, conversationDispatch } = useContext(ChatContext);
-  const { chats } = conversationState;
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [lastMessage, setLastMessage] = useState(null);
   const [listImage, setListImage] = useState([]);
   const [listFile, setListFile] = useState([]);
+  const [value, setValue] = useState(1);
+
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   const inputMessageRef = useRef()
@@ -53,8 +53,9 @@ const Chat = () => {
       }, config);
       socket.emit('send message', data);
       setMessages([...messages, data]);
+      setSeenMessage();
       inputMessageRef.current.focus();
-      setNewMessage('')
+      inputMessageRef.current.value = ''
     } catch (error) {
       console.log(error);
     }
@@ -127,12 +128,25 @@ const Chat = () => {
   const handleSendMessage = () => {
     sendMessage();
   }
-  const handleTyping = (e) => {
-    setNewMessage(e.target.value);
-  }
 
-  const handleKeyUp = (e) => {
-    //setSeenMessage()
+  const setSeenMessage = async () => {
+    const lastestMessage = messages.pop();
+    let readBy = [];
+    readBy.push(user);
+    const jsonData = {
+      lastestMessage,
+      readBy: JSON.stringify(readBy)
+    }
+    console.log(lastestMessage.sender_id._id != user._id);
+    console.log("lastestMessage",lastestMessage);
+    if (lastestMessage.sender_id._id != user._id) {
+      try {
+        const { data } = await axios.post("/api/messages/update-message", jsonData, config);
+        getList();
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 
   const getList = async () => {
@@ -163,12 +177,6 @@ const Chat = () => {
 
   }
 
-  // const handleScroll = (e) => {
-  //   if (e.target.scrollTop <= 0) {
-  //     setPage(page + 1);
-  //     getMessage()
-  //   }
-  // }
   useEffect(() => {
     socket = io("http://localhost:5000");
   }, [])
@@ -250,23 +258,23 @@ const Chat = () => {
       console.log('scrool')
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages,newMessage]);
+  }, [messages]);
 
 
   return (
     <div className='container-fluid'>
       <div className='row'>
-        <Topbar socket={socket} />
+        <Topbar socket={socket} setValue={setValue} value={value} />
       </div>
-      <div className='row justify-content-between'>
+      {value == 1 ?<div className='row justify-content-between'>
         <div className='col-lg-3 overflow-auto border rounded box-sidebar'>
           <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} socket={socket} />
         </div>
-        <div className='col-lg-9' style={{height:"90vh"}}>
+        <div className='col-lg-9' style={{ height: "90vh" }}>
           {selectedConversation && <InfoConversation
             setSelectedConversation={setSelectedConversation}
             selectedConversation={selectedConversation}
-            socket={socket} listImage={listImage} listFile={listFile} 
+            socket={socket} listImage={listImage} listFile={listFile}
             setMessages={setMessages} messages={messages} />}
           <div className='box-chat border rounded'>
             {selectedConversation && messages.map(i => (
@@ -280,10 +288,8 @@ const Chat = () => {
           {selectedConversation &&
             <div className='mt-1 d-flex justify-content-between align-items-center'>
               <input type='text' className="form-control w-65"
-                value={newMessage}
-                onChange={handleTyping}
+                onChange={(e)=>setNewMessage(e.target.value)}
                 ref={inputMessageRef}
-                onKeyUp={handleKeyUp}
                 onKeyPress={handleKeyPress}
                 placeholder="Nhập gì đó ...." />
               <button className='btn btn-primary' onClick={handleSendMessage}><SendOutlinedIcon /></button>
@@ -300,7 +306,8 @@ const Chat = () => {
               </div>
             </div>}
         </div>
-      </div>
+      </div>: <Feed />}
+      
     </div>
   )
 }

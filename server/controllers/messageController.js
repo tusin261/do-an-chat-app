@@ -217,3 +217,16 @@ module.exports.getAllMessage = async (req,res)=>{
         console.log(error.message)
     }
 }
+
+module.exports.updateMessage = async (req,res)=>{
+    const {lastestMessage} = req.body;
+    const readedBy = JSON.parse(req.body.readBy);
+    try {
+        const messageUpdated = await Message.findOneAndUpdate({_id:lastestMessage._id},{
+            readBy:readedBy
+        })
+        res.status(200).json(messageUpdated);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
