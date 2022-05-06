@@ -26,6 +26,21 @@ module.exports.getAllPost = async (req, res) => {
     }
 }
 
+module.exports.setLikePost = async (req,res)=>{
+    try {
+        const post = await Post.findById(req.params.id);
+        if(!post.likes.includes(req.user.id)){
+            const updatedPost = await Post.findOneAndUpdate({_id:req.params.id},{$push:{likes:req.user.id}});
+            return res.status(200).json(updatedPost);
+        }else{
+            const updatedPost = await Post.findOneAndUpdate({_id:req.params.id},{$pull:{likes:req.user.id}});
+            return res.status(200).json(updatedPost);
+        }
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+}
+
 module.exports.postWithText = async (req, res) => {
     const { desc } = req.body;
     try {
@@ -57,10 +72,11 @@ module.exports.postWithImage = async (req, res) => {
                 const newPost = {
                     userId: req.user.id,
                     desc,
-                    content: `${CLOUD_FONT_URL}${filePath}`
+                    content: `${CLOUD_FONT_URL}${filePath}`,
+                    type:'image'
                 }
                 try {
-                    const post = Post.create(newPost);
+                    const post = await Post.create(newPost);
                     const postRes = await Post.findOne({ _id: post._id }).populate('userId');
                     return res.status(200).json(postRes);
                 } catch (error) {
@@ -89,12 +105,12 @@ module.exports.postWithVideo = async (req, res) => {
                 const newPost = {
                     userId: req.user.id,
                     desc,
-                    content: `${CLOUD_FONT_URL}${filePath}`
+                    content: `${CLOUD_FONT_URL}${filePath}`,
+                    type:'video'
                 }
                 try {
                     const post = await Post.create(newPost);
                     const postRes = await Post.findOne({ _id: post._id }).populate('userId');
-                    console.log(postRes)
                     return res.status(200).json(postRes);
                 } catch (error) {
                     res.status(500).json(error);

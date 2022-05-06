@@ -58,5 +58,5 @@ router.get("/",verifyTokenAndAuthorization,postController.getAllPost);
 router.post("/",verifyTokenAndAuthorization,postController.postWithText);
 router.post("/image",verifyTokenAndAuthorization,upload.single('image'),postController.postWithImage);
 router.post("/video",verifyTokenAndAuthorization,uploadVideo.single('video'),postController.postWithVideo);
-
+router.put("/:id/like",verifyTokenAndAuthorization,postController.setLikePost);
 module.exports = router;

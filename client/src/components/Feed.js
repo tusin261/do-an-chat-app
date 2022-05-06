@@ -28,9 +28,6 @@ const Feed = () => {
   }
   useEffect(() => {
     getListPost();
-    return () => {
-      setPosts([]);
-    }
   }, [])
   return (
     <div className='row justify-content-center mt-2'>

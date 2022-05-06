@@ -5,7 +5,8 @@ const postSchema = mongoose.Schema(
         userId:{ type: mongoose.Schema.Types.ObjectId, ref: "User" },
         desc:{type:String},
         content:{type:String},
-        likes:[{type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+        likes:[{type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        type:{type:String},
     },
     { timestamps: true }
 )

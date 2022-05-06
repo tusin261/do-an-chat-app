@@ -54,6 +54,7 @@ const Status = ({updateList,setPosts}) => {
             const { data } = await axios.post("/api/posts",json, config);
             //get all post
             //updateList();
+            setDefaultInput();
             setPosts((preState)=>[data,...preState]);
 
         } else {
@@ -64,6 +65,7 @@ const Status = ({updateList,setPosts}) => {
                 formData.append("desc", statusRef.current.value);
                 const { data } = await axios.post("/api/posts/image",formData, config);
                 //get all post
+                setDefaultInput();
                 setPosts((preState)=>[data,...preState]);
             }else{
                 const formData = new FormData();
@@ -71,11 +73,19 @@ const Status = ({updateList,setPosts}) => {
                 formData.append("desc", statusRef.current.value);
                 const { data } = await axios.post("/api/posts/video",formData, config);
                 //get all post
+                setDefaultInput();
                 setPosts((preState)=>[data,...preState]);
             }
         }
     }
 
+    const setDefaultInput = ()=>{
+        setSelectedImage(null);
+        setSelectedVideo(null);
+        setPreview(null);
+        setIsError(false);
+        statusRef.current.value = '';
+    }
     
 
     useEffect(() => {
