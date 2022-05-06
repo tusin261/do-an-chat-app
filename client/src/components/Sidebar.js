@@ -9,6 +9,7 @@ import Alert from '@mui/material/Alert';
 import { Avatar, Box, Chip, CircularProgress, Snackbar } from '@mui/material';
 import { NotificationContext } from '../context/NotificationContext'
 import * as API from '../constants/ManageURL'
+import SearchIcon from '@mui/icons-material/Search';
 
 const Sidebar = ({ setSelectedConversation, messages, socket }) => {
   const { user } = useAuth();
@@ -159,6 +160,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
                 </div>
                 <div className="mb-1">
                   <input type="text" className="form-control" ref={inputSearch} onChange={searchMember} placeholder='Nhập tên để thêm vào nhóm' />
+                  
                 </div>
                 <div className='mb-1 d-flex flex-wrap'>
                   {listMember.length > 0 && listMember.map((user, index) => (

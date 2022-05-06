@@ -10,7 +10,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { pink } from '@mui/material/colors';
 
-const Post = () => {
+const Post = ({post}) => {
     const [isLiked,setIsLiked] = useState(false);
     const handleLike = ()=>{
         setIsLiked(!isLiked);
@@ -21,7 +21,7 @@ const Post = () => {
                 <div className='col-md-12'>
                     <div className='row p-2 align-items-center'>
                         <div className='col-md-1'>
-                            <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+                            <Avatar alt="Remy Sharp" src={post.userId.image_url} />
                         </div>
                         <div className='col-md-11'>
                             <div className='col-md-12'>Shrimp and Chorizo Paella</div>

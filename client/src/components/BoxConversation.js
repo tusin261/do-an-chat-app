@@ -67,7 +67,7 @@ const BoxConversation = ({ con }) => {
               }}>Video</Box>}
             </div>
             <div className='col-lg-5'>
-              {(con.latestMessage.readBy.length == 0 && con.latestMessage.sender_id._id != user._id) && <p className='mb-0 text-danger text-end'>1</p>}
+              {(con.latestMessage && con.latestMessage.readBy.length == 0 && con.latestMessage.sender_id._id != user._id) && <p className='mb-0 text-danger text-end'>1</p>}
             </div>
           </div>
         </div>

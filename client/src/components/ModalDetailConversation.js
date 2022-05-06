@@ -76,6 +76,7 @@ const ModalDetailConversation = ({ showDetailConversation,
             }
         }
     }
+    
     const handleChangeName = async () => {
         if (groupChatName === selectedConversation.chat_name) {
             //set thong bao loi

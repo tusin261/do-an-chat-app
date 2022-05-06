@@ -30,15 +30,9 @@ const userSchema = mongoose.Schema({
         type:String,
         default:"https://d3pgq3xdjygd77.cloudfront.net/user-avatar.png"
     },
-    sent_request:{
-        type:Array
-    },
-    request:{
-        type:Array
-    },
-    listFriend:{
-        type:Array
-    }
+    sent_request:[{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    request:[{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    listFriend:[{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 },{timestamps: true});
 
 const User = mongoose.model("User", userSchema);

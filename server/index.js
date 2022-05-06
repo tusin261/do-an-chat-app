@@ -9,6 +9,7 @@ const authRoute = require('./routes/authRoute');
 const chatRoute = require('./routes/chatRoute');
 const messageRoute = require('./routes/messageRoute');
 const notificationRoute = require('./routes/notificationRoute');
+const postRoute = require('./routes/postRoute');
 const PORT = process.env.PORT;
 app.use(express.urlencoded({
     extended: true
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoute);
 app.use('/api/chats', chatRoute);
 app.use('/api/messages', messageRoute);
 app.use('/api/notifications',notificationRoute);
+app.use('/api/posts',postRoute);
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
         console.log('Connect successful');

@@ -33,5 +33,8 @@ const upload = multer({
 
 router.post("/updateAvatar",verifyTokenAndAuthorization,upload.single('image'),userController.updateAvatar);
 router.get("/",verifyTokenAndAuthorization,userController.search);
+router.post("/addFriend",verifyTokenAndAuthorization,userController.addFriend);
+router.post("/acceptRequest",verifyTokenAndAuthorization,userController.acceptRequest);
+router.post("/rejectRequest",verifyTokenAndAuthorization,userController.rejectRequest);
 
 module.exports = router;
