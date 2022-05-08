@@ -83,10 +83,15 @@ module.exports.addFriend = async (req, res) => {
     const { userId } = req.body;
     try {
         const currentUser = await user_model.findByIdAndUpdate(req.user.id,
-            { $push: { sent_request: userId } });
+            { $push: { sent_request: userId } }, { new: true });
         const receiveUser = await user_model.findByIdAndUpdate(userId,
-            { $push: { request: req.user.id } });
-        return res.status(200).json(currentUser);
+            { $push: { request: req.user.id } }, { new: true });
+        const accessToken = jwt.sign({
+            id: currentUser._id,
+            isAdmin: currentUser.isAdmin
+        }, process.env.SECRET, { expiresIn: "1d" });
+        const { password, ...rest } = currentUser._doc; 
+        return res.status(200).json({ ...rest, accessToken });
     } catch (error) {
         return res.status(500).json(error);
     }
@@ -96,16 +101,21 @@ module.exports.acceptRequest = async (req, res) => {
     const { userId } = req.body;
     try {
         const currentUser = await user_model.findByIdAndUpdate(req.user.id,
-            { $pull: { request: userId }, $push: { listFriend: userId } })
+            { $pull: { request: userId }, $push: { listFriend: userId } }, { new: true })
             .populate('sent_request')
             .populate('request')
             .populate('listFriend');
         const userSendRequest = await user_model.findByIdAndUpdate(userId,
-            { $pull: { sent_request: req.user.id }, $push: { listFriend: req.user.id } })
+            { $pull: { sent_request: req.user.id }, $push: { listFriend: req.user.id } }, { new: true })
             .populate('sent_request')
             .populate('request')
             .populate('listFriend');
-        return res.status(200).json(currentUser);
+            const accessToken = jwt.sign({
+                id: currentUser._id,
+                isAdmin: currentUser.isAdmin
+            }, process.env.SECRET, { expiresIn: "1d" });
+            const { password, ...rest } = currentUser._doc; 
+            return res.status(200).json({ ...rest, accessToken });
     } catch (error) {
         return res.status(500).json(error);
     }
@@ -115,16 +125,36 @@ module.exports.rejectRequest = async (req, res) => {
     const { userId } = req.body;
     try {
         const currentUser = await user_model.findByIdAndUpdate(req.user.id,
-            { $pull: { request: userId } })
+            { $pull: { request: userId } }, { new: true })
             .populate('sent_request')
             .populate('request')
             .populate('listFriend');
         const userSendRequest = await user_model.findByIdAndUpdate(userId,
-            { $pull: { sent_request: req.user.id } })
+            { $pull: { sent_request: req.user.id } }, { new: true })
             .populate('sent_request')
             .populate('request')
             .populate('listFriend');
-        return res.status(200).json(currentUser);
+            const accessToken = jwt.sign({
+                id: currentUser._id,
+                isAdmin: currentUser.isAdmin
+            }, process.env.SECRET, { expiresIn: "1d" });
+            const { password, ...rest } = currentUser._doc; 
+            return res.status(200).json({ ...rest, accessToken });
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+}
+
+module.exports.getListFriend = async (req,res)=>{
+    
+    try {
+        const currentUser = await user_model.findById(req.user.id).populate('sent_request')
+        .populate('request').populate('listFriend');
+        let response = {};
+        response.request = currentUser.request;
+        response.sent_request = currentUser.sent_request;
+        response.listFriend = currentUser.listFriend;
+        return res.status(200).json(response);
     } catch (error) {
         return res.status(500).json(error);
     }

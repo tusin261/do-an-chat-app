@@ -49,19 +49,6 @@ const Topbar = ({ socket, setValue, value }) => {
     }
   }, [selectedImage]);
 
-
-  useEffect(() => {
-    socket?.on('notification out group', updatedConversation => {
-      setInvi(false);
-      const dataNotification = {
-        id: updatedConversation.data._id,
-        type: 'group',
-        message: `${updatedConversation.name} đã rời nhóm ${updatedConversation.data.chat_name}`
-      }
-      // notificationContext.setNotifications([...notificationContext.notifications, dataNotification]);
-    })
-  })
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedImage) {
@@ -128,7 +115,7 @@ const Topbar = ({ socket, setValue, value }) => {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
-                <Notification socket={socket} />
+                <Notification socket={socket} setValue={setValue} value={value} />
               </Menu>
             </div>
             <div className='col-md-5'>

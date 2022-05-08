@@ -4,8 +4,9 @@ import axios from 'axios';
 import useAuth from '../context/AuthContext';
 import Status from './Status';
 import CircularProgress from '@mui/material/CircularProgress';
+import ListRequest from './ListRequest';
 
-const Feed = () => {
+const Feed = ({socket}) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +34,7 @@ const Feed = () => {
     <div className='row justify-content-center mt-2'>
       <div className='col-md-7'>
         <div className='row'>
-          <div className='col-md-9'>
+          <div className='col-md-8'>
             {/* dang bai */}
             <Status updateList={getListPost} setPosts={setPosts} />
             {isLoading &&
@@ -47,8 +48,8 @@ const Feed = () => {
             ))}
             {/* post */}
           </div>
-          <div className='col-md-3'>
-            right bar
+          <div className='col-md-4'>
+            <ListRequest socket={socket} />
           </div>
         </div>
       </div>

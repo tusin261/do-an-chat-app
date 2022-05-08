@@ -306,7 +306,7 @@ const Chat = () => {
               </div>
             </div>}
         </div>
-      </div>: <Feed />}
+      </div>: <Feed socket={socket}/>}
       
     </div>
   )

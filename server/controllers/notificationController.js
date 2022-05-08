@@ -43,7 +43,27 @@ module.exports.createNotificationGroup = async (req, res) => {
 }
 
 module.exports.createNotificationFriend = async (req, res) => {
-
+    const { receiver_id, type } = req.body;
+    let content = '';
+    let receiver = [receiver_id];
+    if (type == 'add_friend') {
+        content = 'đã gửi lời mời kết bạn';
+    } else {
+        content = 'đã chấp nhận kết bạn';
+    }
+    try {
+        const newNotification = await Notification.create({
+            sender_id: req.user.id,
+            type,
+            receiver,
+            content
+        });
+        const notification = await Notification.findOne({ _id: newNotification._id })
+            .populate("receiver").populate("sender_id");
+        res.status(200).json(notification);
+    } catch (error) {
+        res.status(500).json(error);
+    }
 }
 
 module.exports.getAllNotification = async (req, res) => {

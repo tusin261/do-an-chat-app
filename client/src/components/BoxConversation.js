@@ -38,7 +38,7 @@ const BoxConversation = ({ con }) => {
                 textOverflow: 'ellipsis',
                 overflow: 'hidden',
                 mb: 0,
-                px: 2,  
+                px: 2,
               }}>{con.latestMessage.content}</Box>}
               {(con.latestMessage && con.latestMessage.type === 'notification') && <Box component="p" sx={{
                 textOverflow: 'ellipsis',

@@ -1,15 +1,21 @@
 import axios from 'axios';
-import React, { useContext, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import useAuth from '../context/AuthContext';
 import { ChatContext } from '../context/ChatContext'
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import CheckIcon from '@mui/icons-material/Check';
-const Search = ({ setSelectedConversation }) => {
+import { loginCall } from '../ApiCall';
+import * as API from '../constants/ManageURL'
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import ModalUser from './ModalUser';
+
+const Search = ({ setSelectedConversation, socket }) => {
     const { user, dispatch } = useAuth();
     const { conversationState, conversationDispatch } = useContext(ChatContext);
     const { chats } = conversationState;
 
+    const [show, setShow] = useState(false);
     const [listResult, setListResult] = useState([]);
     const inputSearch = useRef();
     axios.defaults.baseURL = "http://localhost:5000";
@@ -19,6 +25,18 @@ const Search = ({ setSelectedConversation }) => {
             "Authorization": `Bearer ${user.accessToken}`
         },
     };
+
+
+    
+    const updateUser = (data) => {
+        dispatch({ type: 'LOGIN_SUCCESS', payload: data });
+        localStorage.setItem("user", JSON.stringify(data));
+    }
+    const showModalUser = (e)=>{
+        e.stopPropagation();
+        setShow(true);
+    } 
+
     const handleChange = async (e) => {
         const keyword = e.target.value;
         try {
@@ -50,54 +68,42 @@ const Search = ({ setSelectedConversation }) => {
             console.log(error);
         }
     }
-    const addFriend = async (e, item) => {
-        e.stopPropagation();
-        const json = {
-            userId: item._id
-        }
-        try {
-            const { data } = await axios.post('/api/users/addFriend', json, config);
-            // dispatch({ type: 'LOGIN_SUCCESS', payload: data });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
+    
     const checkFriend = (receiver) => {
         const request = [...user.request];
         const sent_request = [...user.sent_request];
         const friends = [...user.listFriend];
-        if(request.includes(receiver._id.toString())){
+        if (request.includes(receiver._id.toString())) {
             return 2;//chap nhan
-        }else if(sent_request.includes(receiver._id.toString())){
+        } else if (sent_request.includes(receiver._id.toString())) {
             return 1; // da gui kb
-        }else if(friends.includes(receiver._id.toString())){
+        } else if (friends.includes(receiver._id.toString())) {
             return 3;//ban be
-        }else{
+        } else {
             return 4;//chua la ban
         }
     }
 
-    const acceptRequest = async (e, item) =>{
+    const acceptRequest = async (e, item) => {
         e.stopPropagation();
         const json = {
             userId: item._id
         }
         try {
             const { data } = await axios.post('/api/users/acceptRequest', json, config);
-            // dispatch({ type: 'LOGIN_SUCCESS', payload: data });
+            updateUser(data);
         } catch (error) {
             console.log(error);
         }
     }
-    const rejectRequest = async (e, item) =>{
+    const rejectRequest = async (e, item) => {
         e.stopPropagation();
         const json = {
             userId: item._id
         }
         try {
             const { data } = await axios.post('/api/users/rejectRequest', json, config);
-            // dispatch({ type: 'LOGIN_SUCCESS', payload: data });
+            updateUser(data);
         } catch (error) {
             console.log(error);
         }
@@ -122,22 +128,27 @@ const Search = ({ setSelectedConversation }) => {
                                         {item.email}
                                     </div>
                                     <div className='row'>
-                                        <div className='col-lg-12 px-0 d-flex align-items-center'>
+                                        {/* <div className='col-lg-12 px-0 d-flex align-items-center'>
                                             {checkFriend(item) === 1 && <button className='btn btn-primary btn-sm' disabled><CheckIcon sx={{ fontSize: 16 }} /> Đã gửi lời mời kết bạn</button>}
-                                            {checkFriend(item) === 2 && 
-                                            <div className='row'>
-                                                <div className='col-md-6'>
-                                                <button className='btn btn-primary btn-sm' onClick={(e) => acceptRequest(e, item)}>Đồng ý</button>
+                                            {checkFriend(item) === 2 &&
+                                                <div className='row'>
+                                                    <div className='col-md-6'>
+                                                        <button className='btn btn-primary btn-sm' onClick={(e) => acceptRequest(e, item)}>Đồng ý</button>
+                                                    </div>
+                                                    <div className='col-md-6'>
+                                                        <button className='btn btn-primary btn-sm' onClick={(e) => rejectRequest(e, item)}>Từ chối</button>
+                                                    </div>
                                                 </div>
-                                                <div className='col-md-6'>
-                                                <button className='btn btn-primary btn-sm' onClick={(e) => rejectRequest(e, item)}>Từ chối</button>
-                                                </div>
-                                            </div>  
                                             }
                                             {checkFriend(item) === 3 && <button className='btn btn-primary btn-sm' disabled>Bạn bè</button>}
                                             {checkFriend(item) === 4 && <button className='btn btn-primary btn-sm' onClick={(e) => addFriend(e, item)}><AddIcon sx={{ fontSize: 16 }} /> Thêm bạn</button>}
-                                        {/* <button className='btn btn-primary btn-sm' onClick={(e) => addFriend(e, item)}><AddIcon sx={{ fontSize: 16 }} />Thêm bạn</button> */}
+                                        </div> */}
+                                        <div className='col-lg-12 px-0 d-flex align-items-center'>
+                                            <button className='btn btn-primary btn-sm' onClick={showModalUser}>
+                                                <PersonSearchIcon sx={{ fontSize: 16 }} /> Xem thông tin</button>
                                         </div>
+                                        {show && <ModalUser show={show} onHide={() => setShow(false)} 
+                                            friend={item} socket={socket} />}
                                     </div>
                                 </div>
                             </div>

@@ -38,8 +38,6 @@ const Post = ({ post }) => {
         setIsLiked(!isLiked);
     }
 
-
-
     return (
         <div className='row mb-2'>
             <Card sx={{ maxWidth: 1 }}>

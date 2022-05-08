@@ -64,6 +64,9 @@ io.on('connection', (socket) => {
         socket.join(room._id);
         console.log("User join " + room._id);
     });
+
+    
+
     socket.on('send message',(newMessage)=>{
         if(newMessage.conversation_id.isGroupChat){
             const listReceive = newMessage.conversation_id.member;
@@ -115,7 +118,6 @@ io.on('connection', (socket) => {
             }
         }
     })
-    
     socket.on('create group',(data)=>{
         const listReceive = data.member;
         const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
@@ -124,7 +126,18 @@ io.on('connection', (socket) => {
             socket.to(newListReceiveOnlineNoSender[i].socketId).emit("notification new group",data);
         }
     })
-   
+    socket.on('add friend',({receiverId,data})=>{
+        const isOnline = users.find((e)=>e.userId == receiverId);
+        if(isOnline){
+            socket.to(getUser(receiverId).socketId).emit("new request friend",data);
+        }
+    });
+    socket.on('accept friend',({ receiverId, data })=>{
+        const isOnline = users.find((e)=>e.userId == receiverId);
+        if(isOnline){
+            socket.to(getUser(receiverId).socketId).emit("new request accept friend",data);
+        }
+    });
 
     socket.on('out group',(conversation)=>{
         const listReceive = conversation.data.member;

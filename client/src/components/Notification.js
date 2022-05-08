@@ -6,7 +6,7 @@ import * as API from '../constants/ManageURL'
 import useAuth from '../context/AuthContext';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
-const Notification = ({ socket }) => {
+const Notification = ({ socket,setValue,value }) => {
     const { user } = useAuth();
     const [oldMember, setOldMember] = useState([]);
     const [newMember, setNewMember] = useState([]);
@@ -45,12 +45,25 @@ const Notification = ({ socket }) => {
         const content = notification.content;
         for (let i = 0; i < notification.receiver.length; i++) {
             if (user._id == notification.receiver[i]._id) {
-                return `Bạn ${content}`;
+                if(notification.type == 'add_friend' || notification.type == 'accept_friend'){
+                    return `${notification.sender_id.first_name} ${content}`;
+                }else{
+                    return `Bạn ${content}`;
+                }
             }
         }
         return '';
     }
 
+    const handleClickNotification = (noti)=>{
+        if(noti.type == 'add_friend'){
+            if(value == 1){
+                setValue(0);
+            }
+        }else{
+            return;
+        }
+    }
 
     useEffect(() => {
         getListNoti();
@@ -60,6 +73,14 @@ const Notification = ({ socket }) => {
         socket?.on('notification new group', data => {
             getListNoti();
         })
+        socket?.on('new request friend', data => {
+            console.log(data);
+            getListNoti();
+        });
+        socket?.on('new request accept friend', data => {
+            console.log(data);
+            getListNoti();
+        });
         
     }, [notification.notifications]);
 
@@ -76,7 +97,7 @@ const Notification = ({ socket }) => {
             }} >
                 {notification.notifications.map((e, i) => (
                     <ListItem key={i} >
-                        <ListItemButton>
+                        <ListItemButton onClick={()=>handleClickNotification(e)}>
                             <ListItemAvatar>
                                 <Avatar alt="avata" src={e.sender_id.image_url} />
                             </ListItemAvatar>

@@ -194,7 +194,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
           </div>
         </div>
       </div>
-      <Search setSelectedConversation={setSelectedConversation} />
+      <Search setSelectedConversation={setSelectedConversation} socket={socket} />
       {loading && <Box sx={{ display: 'flex' }}>
         <CircularProgress />
       </Box>}
