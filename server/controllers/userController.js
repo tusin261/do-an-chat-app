@@ -52,6 +52,32 @@ module.exports.updateAvatar = async (req, res) => {
         return res.status(500).json({ message: "Không có file nào được chọn" });
     }
 }
+
+module.exports.updateInformation = async (req, res) => {
+    const { first_name, last_name, email, new_password } = req.body;
+    console.log(req.body);
+    if (new_password == '') {
+        try {
+            const user = await user_model.findOneAndUpdate({ _id: req.user.id }, {
+                $set: {
+                    first_name: first_name,
+                    last_name: last_name,
+                    email: email
+                }
+            }, { new: true });
+            const accessToken = jwt.sign({
+                id: user._id,
+                isAdmin: user.isAdmin
+            }, process.env.SECRET, { expiresIn: "1d" });
+            const { password, ...rest } = user._doc;
+            return res.status(200).json({ ...rest, accessToken });
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    } else {
+    }
+}
+
 module.exports.search = async (req, res) => {
     const keyword = req.query.q;
     if (keyword == '') {
@@ -67,9 +93,9 @@ module.exports.search = async (req, res) => {
     //     ]
     // }).find({ _id: { $ne: req.user.id } }).find({ isAdmin: false });
     const users = await user_model.find({
-        "first_name": { $regex: keyword,"$options" : "i"}
+        "first_name": { $regex: keyword, "$options": "i" }
     }).find({ _id: { $ne: req.user.id } }).find({ isAdmin: false });
-    const result2 = await user_model.find({ first_name: keyword,"$options" : "i" }).find({ _id: { $ne: req.user.id } }).find({ isAdmin: false });
+    const result2 = await user_model.find({ first_name: keyword, "$options": "i" }).find({ _id: { $ne: req.user.id } }).find({ isAdmin: false });
     if (users.length > 0) {
         return res.status(200).json(users);
     } else {
@@ -92,7 +118,7 @@ module.exports.addFriend = async (req, res) => {
             id: currentUser._id,
             isAdmin: currentUser.isAdmin
         }, process.env.SECRET, { expiresIn: "1d" });
-        const { password, ...rest } = currentUser._doc; 
+        const { password, ...rest } = currentUser._doc;
         return res.status(200).json({ ...rest, accessToken });
     } catch (error) {
         return res.status(500).json(error);
@@ -112,12 +138,12 @@ module.exports.acceptRequest = async (req, res) => {
             .populate('sent_request')
             .populate('request')
             .populate('listFriend');
-            const accessToken = jwt.sign({
-                id: currentUser._id,
-                isAdmin: currentUser.isAdmin
-            }, process.env.SECRET, { expiresIn: "1d" });
-            const { password, ...rest } = currentUser._doc; 
-            return res.status(200).json({ ...rest, accessToken });
+        const accessToken = jwt.sign({
+            id: currentUser._id,
+            isAdmin: currentUser.isAdmin
+        }, process.env.SECRET, { expiresIn: "1d" });
+        const { password, ...rest } = currentUser._doc;
+        return res.status(200).json({ ...rest, accessToken });
     } catch (error) {
         return res.status(500).json(error);
     }
@@ -136,22 +162,22 @@ module.exports.rejectRequest = async (req, res) => {
             .populate('sent_request')
             .populate('request')
             .populate('listFriend');
-            const accessToken = jwt.sign({
-                id: currentUser._id,
-                isAdmin: currentUser.isAdmin
-            }, process.env.SECRET, { expiresIn: "1d" });
-            const { password, ...rest } = currentUser._doc; 
-            return res.status(200).json({ ...rest, accessToken });
+        const accessToken = jwt.sign({
+            id: currentUser._id,
+            isAdmin: currentUser.isAdmin
+        }, process.env.SECRET, { expiresIn: "1d" });
+        const { password, ...rest } = currentUser._doc;
+        return res.status(200).json({ ...rest, accessToken });
     } catch (error) {
         return res.status(500).json(error);
     }
 }
 
-module.exports.getListFriend = async (req,res)=>{
-    
+module.exports.getListFriend = async (req, res) => {
+
     try {
         const currentUser = await user_model.findById(req.user.id).populate('sent_request')
-        .populate('request').populate('listFriend');
+            .populate('request').populate('listFriend');
         let response = {};
         response.request = currentUser.request;
         response.sent_request = currentUser.sent_request;

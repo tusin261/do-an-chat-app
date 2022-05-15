@@ -32,6 +32,30 @@ const AuthReducer = (state, action) => {
                 user: null,
                 isError: false
             }
+        case 'UPDATE_IMG':
+            console.log('update image');
+            return {
+                ...state,
+                isLoading: false,
+                user: {
+                    ...state.user,
+                    image_url: action.payload
+                },
+                isError: false
+            }
+        case 'UPDATE_IN4':
+            console.log('update in4');
+            return {
+                ...state,
+                isLoading: false,
+                user: {
+                    ...state.user,
+                    first_name: action.payload.first_name,
+                    last_name:action.payload.last_name,
+                    email:action.payload.email
+                },
+                isError: false
+            }
         default:
             return state;
     }

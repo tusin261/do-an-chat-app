@@ -37,5 +37,6 @@ router.get("/getFriend",verifyTokenAndAuthorization,userController.getListFriend
 router.post("/addFriend",verifyTokenAndAuthorization,userController.addFriend);
 router.post("/acceptRequest",verifyTokenAndAuthorization,userController.acceptRequest);
 router.post("/rejectRequest",verifyTokenAndAuthorization,userController.rejectRequest);
+router.post("/updateInfomation",verifyTokenAndAuthorization,userController.updateInformation);
 
 module.exports = router;

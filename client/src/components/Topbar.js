@@ -25,6 +25,17 @@ const Topbar = ({ socket, setValue, value }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const { notification, notificationDispatch } = useContext(NotificationContext);
+  const [lastName, setLastName] = useState(user.last_name);
+  const [firstName, setFirstName] = useState(user.first_name);
+  const [email, setEmail] = useState(user.email);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmpassword, setConfirmpassword] = useState('');
+  const [validFirstName, setValidFirstName] = useState(true);
+  const [validLastName, setValidLastName] = useState(true);
+  const [validEmail, setValidEmail] = useState(true);
+  const [validPassword, setValidPassword] = useState(true);
+  const [validConfirmPassword, setValidConfirmPassword] = useState(true);
+  const [messageEmail, setMessageEmail] = useState('');
 
   const handleChange = (event, newValue) => {
     console.log(newValue);
@@ -32,12 +43,7 @@ const Topbar = ({ socket, setValue, value }) => {
   };
 
   axios.defaults.baseURL = "http://localhost:5000";
-  const config = {
-    headers: {
-      "Content-type": "multipart/form-data",
-      "Authorization": `Bearer ${user.accessToken}`
-    },
-  };
+
   useEffect(() => {
     if (selectedImage) {
       const render = new FileReader();
@@ -53,17 +59,40 @@ const Topbar = ({ socket, setValue, value }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedImage) {
+      const config = {
+        headers: {
+          "Content-type": "multipart/form-data",
+          "Authorization": `Bearer ${user.accessToken}`
+        },
+      };
       const formData = new FormData();
       formData.append("image", selectedImage);
       try {
         const rs = await axios.post("/api/users/updateAvatar", formData, config);
-        dispatch({ type: 'LOGIN_SUCCESS', payload: rs.data });
-        localStorage.setItem("user", JSON.stringify(rs.data));
+        dispatch({ type: 'UPDATE_IMG', payload: rs.data.image_url });
+        // localStorage.setItem("user", JSON.stringify(rs.data));
       } catch (error) {
         console.log(error);
       }
     } else {
-      alert('Chua co hinh anh');
+      const json = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        new_password: newPassword
+      }
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": `Bearer ${user.accessToken}`
+        },
+      };
+      try {
+        const rs = await axios.post("/api/users/updateInfomation", json, config);
+        dispatch({ type: 'UPDATE_IN4', payload: rs.data });
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 
@@ -85,6 +114,45 @@ const Topbar = ({ socket, setValue, value }) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const onChangeFirstName = (e) => {
+    setFirstName(e.target.value);
+  }
+  const checkValidFirstName = () => {
+    if (firstName == '') {
+      setValidFirstName(false);
+    } else {
+      setValidFirstName(true);
+    }
+  }
+
+  //last name
+  const onChangeLastName = (e) => {
+    setLastName(e.target.value);
+  }
+  const checkValidLastName = () => {
+    if (lastName == '') {
+      setValidLastName(false);
+    } else {
+      setValidLastName(true);
+    }
+  }
+
+  //email
+
+  const onChangeEmail = (e) => {
+    setEmail(e.target.value);
+  }
+  const checkValidEmail = () => {
+    const regexEmail = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    if (email == '' || !regexEmail.test(email)) {
+      setValidEmail(false);
+      setMessageEmail('Vui lòng nhập đúng định dạng email');
+    } else {
+      setValidEmail(true);
+    }
+  }
+
 
   return (
     <div className='col-md-12 py-1'>
@@ -148,17 +216,29 @@ const Topbar = ({ socket, setValue, value }) => {
                               <div className='col-md-12'>
                                 <hr />
                                 <h4>Thông tin cá nhân</h4>
-                                <form onSubmit={handleSubmit}>
-                                  <div className="mb-3">
-                                    <label className="form-label">Họ</label>
-                                    <input type="text" className="form-control" placeholder={user.last_name} />
-                                  </div>
-                                  <div className="mb-3">
-                                    <label className="form-label">Tên</label>
-                                    <input type="text" className="form-control" placeholder={user.first_name} />
-                                  </div>
-                                  <button type="submit" className="btn btn-primary" data-bs-dismiss="modal">Lưu thay đổi</button>
-                                </form>
+
+                                <div className="mb-3">
+                                  <label className="form-label">Họ</label>
+                                  <input type="text" className="form-control" value={lastName}
+                                    onChange={onChangeLastName}
+                                    onBlur={checkValidLastName} />
+                                  <span hidden={validLastName} className="my-2 text-danger text-start">Họ không được để trống</span>
+                                </div>
+                                <div className="mb-3">
+                                  <label className="form-label">Tên</label>
+                                  <input type="text" className="form-control" value={firstName}
+                                    onChange={onChangeFirstName}
+                                    onBlur={checkValidFirstName} />
+                                  <span hidden={validFirstName} className="my-2 text-danger text-start">Tên không được để trống</span>
+                                </div>
+                                <div className="mb-3">
+                                  <label className="form-label">Email</label>
+                                  <input type="text" className="form-control" value={email}
+                                    onChange={onChangeEmail}
+                                    onBlur={checkValidEmail} />
+                                  <span hidden={validEmail} className="my-2 text-danger text-start">{messageEmail}</span>
+                                </div>
+                                <button type="submit" className="btn btn-primary" data-bs-dismiss="modal" onClick={handleSubmit}>Lưu thay đổi</button>
                               </div>
                             </div>
                           </div>

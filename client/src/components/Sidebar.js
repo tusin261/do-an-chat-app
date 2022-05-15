@@ -16,7 +16,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-const Sidebar = ({ setSelectedConversation, messages, socket,online }) => {
+const Sidebar = ({ setSelectedConversation, messages, socket, online }) => {
   const { user } = useAuth();
   //group
   const [groupChatName, setGroupChatName] = useState('');
@@ -65,7 +65,6 @@ const Sidebar = ({ setSelectedConversation, messages, socket,online }) => {
 
   const handleClickConversation = (conversations) => {
     setSelectedConversation(conversations);
-
   }
 
   const handleClickItemInList = (item) => {
@@ -144,6 +143,17 @@ const Sidebar = ({ setSelectedConversation, messages, socket,online }) => {
   return (
     <div className='col-lg-12'>
       <button className='btn btn-primary mt-2' data-bs-toggle="modal" data-bs-target="#modalGroup">Tạo Group Chat <AddOutlinedIcon /></button>
+      <FormControl>
+        <RadioGroup row
+          aria-labelledby="demo-controlled-radio-buttons-group"
+          name="controlled-radio-buttons-group"
+          value={value}
+          onChange={handleChangeType}
+        >
+          <FormControlLabel value="1" control={<Radio />} label="Trò chuyện" />
+          <FormControlLabel value="2" control={<Radio />} label="Bạn bè" />
+        </RadioGroup>
+      </FormControl>
       {successCreateGroup && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} open={successCreateGroup} autoHideDuration={2000} onClose={handleClose}>
         <Alert severity="success" sx={{ width: '100%' }}>
           Tạo nhóm thành công !!!
@@ -200,17 +210,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket,online }) => {
         </div>
       </div>
       <Search setSelectedConversation={setSelectedConversation} socket={socket} />
-      <FormControl>
-        <RadioGroup row
-          aria-labelledby="demo-controlled-radio-buttons-group"
-          name="controlled-radio-buttons-group"
-          value={value}
-          onChange={handleChangeType}
-        >
-          <FormControlLabel value="1" control={<Radio />} label="Trò chuyện" />
-          <FormControlLabel value="2" control={<Radio />} label="Bạn bè" />
-        </RadioGroup>
-      </FormControl>
+
       <Divider />
       {loading && <Box sx={{ display: 'flex' }}>
         <CircularProgress />

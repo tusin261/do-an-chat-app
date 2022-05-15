@@ -36,7 +36,7 @@ const Chat = () => {
   const [page, setPage] = useState(0);
   const [length, setLength] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [online,setOnline] = useState([]);
+  const [online, setOnline] = useState([]);
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   const inputMessageRef = useRef()
@@ -214,6 +214,10 @@ const Chat = () => {
       getMessage();
       selectedChatCompare.current = selectedConversation;
     }
+    return () => {
+      setPage(0);
+      setMessages([]);
+    }
   }, [selectedConversation]);
 
   const getMessage = async () => {
@@ -262,8 +266,8 @@ const Chat = () => {
       {value == 1 ? <div className='row justify-content-between'>
         <div className='col-lg-3 overflow-auto border rounded box-sidebar'>
           <Sidebar setSelectedConversation={setSelectedConversation}
-           messages={messages}
-            socket={socket} online={online}/>
+            messages={messages}
+            socket={socket} online={online} />
         </div>
         <div className='col-lg-9' style={{ height: "90vh" }}>
           {selectedConversation && <InfoConversation
