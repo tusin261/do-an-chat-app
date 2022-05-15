@@ -5,7 +5,8 @@ import { BrowserRouter } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { AuthContextProvider } from './context/AuthContext';
 import { ChatProvider } from './context/ChatContext'
-import { NotificationProvider } from './context/NotificationContext'
+import { NotificationProvider } from './context/NotificationContext';
+
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>

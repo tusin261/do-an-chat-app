@@ -11,10 +11,14 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { pink } from '@mui/material/colors';
 import axios from 'axios';
 import useAuth from '../context/AuthContext';
-const Post = ({ post }) => {
+import { formatDate, formatDateTime, getTime } from '../services/Format/FormatDateAndTime'
+import * as API from '../constants/ManageURL'
+
+const Post = ({ post, socket }) => {
     const { user } = useAuth();
     const [isLiked, setIsLiked] = useState(false);
     const [like, setLike] = useState(post.likes.length);
+
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -23,19 +27,47 @@ const Post = ({ post }) => {
         },
     };
 
-    useEffect(()=>{
-        setIsLiked(post.likes.some(e=>e._id == user._id));
-    },[post.likes])
+    useEffect(() => {
+        setIsLiked(post.likes.some(e => e._id == user._id));
+    }, [post.likes])
+
+    // useEffect(() => {
+    //     if (isLiked) {
+    //         createNewNotificationLike(userId, postId);
+    //     }
+    // }, [isLiked]);
 
     const handleLike = async () => {
         const json = {};
+        let userId;
+        let postId
         try {
-            const { data } = await axios.put("/api/posts/"+post._id+"/like",json, config);
+            const { data } = await axios.put("/api/posts/" + post._id + "/like", json, config);
+            userId = data.userId;
+            postId = data._id;
+            if(!isLiked){
+                createNewNotificationLike(userId, postId);
+            }
+            console.log(data);
         } catch (error) {
             console.log(error);
         }
         setLike(isLiked ? like - 1 : like + 1);
         setIsLiked(!isLiked);
+    }
+
+    const createNewNotificationLike = async (userId, postId) => {
+        try {
+            const json = {
+                receiver_id: userId,
+                type: 'like',
+                postId: postId
+            }
+            const { data } = await axios.post(API.CREATE_NOTI_LIKE, json, config);
+            socket.emit('like', { receiverId: userId, data });
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return (
@@ -46,9 +78,9 @@ const Post = ({ post }) => {
                         <div className='col-md-1'>
                             <Avatar alt="Remy Sharp" src={post.userId.image_url} />
                         </div>
-                        <div className='col-md-11'>
+                        <div className='col-md-10 mx-2'>
                             <div className='col-md-12'>{post.userId.first_name}</div>
-                            <div className='col-md-12'>{post.userId.createdAt}</div>
+                            <div className='col-md-12'><small>Vào {formatDateTime(post.createdAt)}</small></div>
                         </div>
                     </div>
                 </div>

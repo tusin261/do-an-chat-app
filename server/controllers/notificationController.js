@@ -1,28 +1,20 @@
 const Notification = require('../models/notificationModel');
 const NotificationType = require('../constants/notification_contants');
+const Post = require('../models/postModel');
 
 module.exports.createNotificationGroup = async (req, res) => {
-    const { type, group, memKick, memAdd } = req.body;
+    const { type, group} = req.body;
     //const receiverId = JSON.parse(req.body.receiverId);
     let content = '';
-    switch (type) {
-        case 'add_group':
-            content = `${NotificationType.ADD_GROUP} ${group.chat_name}`;
-            break;
-        // case 'kick_mem':
-        //     content = `${memKick.first_name}-${NotificationType.KICK_MEMBER} ${group.chat_name}`;
-        //     break;
-        // case 'out_group':
-        //     return content = `${NotificationType.OUT_GROUP} ${group.chat_name}`;
-        //     break;
-        // case 'change_img':
-        //     content = `${NotificationType.CHANGE_IMG} ${group.chat_name}`;
-        //     break;
-        // case 'add_mem':
-        //     content = `${NotificationType.ADD_MEM} ${group.chat_name}`;
-        //     break;
-        default:
-            break;
+    // switch (type) {
+    //     case 'add_group':
+    //         content = `${NotificationType.ADD_GROUP} ${group.chat_name}`;
+    //         break;
+    //     default:
+    //         break;
+    // }
+    if(type == 'add_group'){
+        content = `${NotificationType.ADD_GROUP} ${group.chat_name}`;
     }
 
     try {
@@ -65,6 +57,25 @@ module.exports.createNotificationFriend = async (req, res) => {
         res.status(500).json(error);
     }
 }
+
+module.exports.createNotificationLike = async (req,res)=>{
+    const {receiver_id,type,postId} = req.body;
+    console.log(receiver_id);
+    try {
+        const post = await Post.findById(postId);
+        const newNotification = await Notification.create({
+            sender_id: req.user.id,
+            type,
+            receiver:[receiver_id],
+            content:`đã thích bài viết của bạn: ${post.desc}`
+        });
+        const notification = await Notification.findOne({ _id: newNotification._id })
+            .populate("receiver").populate("sender_id");
+        res.status(200).json(notification);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+} 
 
 module.exports.getAllNotification = async (req, res) => {
     try {

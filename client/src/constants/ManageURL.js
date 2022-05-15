@@ -25,5 +25,6 @@ export const ADD_MEMBER_GROUP = BACKEND_URL+"chats/add-group";
 export const GET_NOTI = BACKEND_URL+"notifications";
 export const CREATE_NOTI_GROUP = BACKEND_URL+"notifications/notification-group";
 export const CREATE_NOTI_FRIEND = BACKEND_URL+"notifications/notification-friend";
+export const CREATE_NOTI_LIKE = BACKEND_URL+"notifications/notification-like";
 
 

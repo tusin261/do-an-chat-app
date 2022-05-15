@@ -27,7 +27,7 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
         if(listFriend){
             checkFriend();
         }
-    },[listFriend]);
+    },[listFriend,friend]);
 
     const getListFriend = async () => {
         try {
@@ -36,14 +36,9 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
         } catch (error) {
             console.log(error);
         }
-
     }
-    const updateUser = (data) => {
-        dispatch({ type: 'LOGIN_SUCCESS', payload: data });
-        localStorage.setItem("user", JSON.stringify(data));
-    }
-
     const checkFriend = () => {
+        console.log('a');
         const sent_request = listFriend.sent_request;
         const friends = listFriend.listFriend;
         const request = listFriend.request;

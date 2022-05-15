@@ -11,6 +11,8 @@ import * as API from '../constants/ManageURL'
 const ListRequest = ({ socket }) => {
   const { user, dispatch } = useAuth();
   const [request, setRequest] = useState([]);
+  const [fetchingRequest, setFetchingRequest] = useState(true);
+
   axios.defaults.baseURL = "http://localhost:5000";
   const config = {
     headers: {
@@ -28,14 +30,20 @@ const ListRequest = ({ socket }) => {
   }, []);
 
   useEffect(() => {
-    getListFriend();
-  }, [])
+    let active = true;
+    getListFriend(active);
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  const getListFriend = async () => {
+  const getListFriend = async (active) => {
     try {
       const { data } = await axios.get('/api/users/getFriend', config);
-      console.log(data);
-      setRequest(data.request);
+      if(active){
+        setRequest(data.request);
+      }
+      setFetchingRequest(false);
     } catch (error) {
       console.log(error);
     }
@@ -81,7 +89,7 @@ const ListRequest = ({ socket }) => {
     }
 
   return (
-    <div className='row'>
+    <div className='row box-request'>
       <div className='col-md-12 border rounded'>
         <div className='row'>
           <div className='col-md-12'>

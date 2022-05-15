@@ -1,10 +1,11 @@
 import React, { useContext } from 'react'
 import useAuth from '../context/AuthContext';
 import { NotificationContext } from '../context/NotificationContext'
-import { formatDate } from '../services/Format/FormatDateAndTime'
+import { formatDate,formatDateTime,getTime } from '../services/Format/FormatDateAndTime'
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { Grid } from '@mui/material';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
 const BoxConversation = ({ con }) => {
   const { user } = useAuth();
@@ -26,10 +27,10 @@ const BoxConversation = ({ con }) => {
                 overflow: 'hidden',
                 mb: 0,
                 px: 2
-              }}>{!con.isGroupChat ? getNameConversation(user, con) : con.chat_name}</Box>
+              }}><b>{!con.isGroupChat ? getNameConversation(user, con) : con.chat_name}</b></Box>
             </div>
             <div className='col-lg-5'>
-              <p className='mb-0 text-end'>{con.latestMessage && formatDate(con.latestMessage.createdAt)}</p>
+              <p className='mb-0 text-end'>{con.latestMessage && formatDateTime(con.latestMessage.createdAt)}</p>
             </div>
           </div>
           <div className='row'>
@@ -39,6 +40,7 @@ const BoxConversation = ({ con }) => {
                 overflow: 'hidden',
                 mb: 0,
                 px: 2,
+                height:24
               }}>{con.latestMessage.content}</Box>}
               {(con.latestMessage && con.latestMessage.type === 'notification') && <Box component="p" sx={{
                 textOverflow: 'ellipsis',
@@ -66,8 +68,8 @@ const BoxConversation = ({ con }) => {
                 px: 2
               }}>Video</Box>}
             </div>
-            <div className='col-lg-5'>
-              {(con.latestMessage && con.latestMessage.readBy.length == 0 && con.latestMessage.sender_id._id != user._id) && <p className='mb-0 text-danger text-end'>1</p>}
+            <div className='col-lg-5 d-flex justify-content-end'>
+              {(con.latestMessage && con.latestMessage.readBy.length == 0 && con.latestMessage.sender_id._id != user._id) && <span><FiberManualRecordIcon style={{ fontSize: 16,color:"#F32424"}} /></span>}
             </div>
           </div>
         </div>

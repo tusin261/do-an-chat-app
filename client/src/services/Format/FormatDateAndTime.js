@@ -29,4 +29,42 @@ function formatDate(value1) {
     }
 }
 
-module.exports = { formatAMPM, formatDate };
+const fulldays = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+const months = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+    "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Thang 12"];
+
+function formatDateTime(t) {
+    let dt = new Date(t);
+    const date = dt.getDate();
+    const month = months[dt.getMonth()];
+    const diffDays = new Date().getDate() - date;
+    const diffMonths = new Date().getMonth() - dt.getMonth();
+    const diffYears = new Date().getFullYear() - dt.getFullYear();
+    if (diffYears === 0 && diffDays === 0 && diffMonths === 0) {
+        return getTime(t);
+    } else if (diffDays === -1) {
+        return getTime(t);
+    } else if (diffYears === 0 && diffDays === 1) {
+        return "Yesterday";
+    } else if (diffYears === 0 && (diffDays > 1 && diffDays < 7)) {
+        return fulldays[dt.getDay()];
+    } else if (diffYears >= 1) {
+        return dt.getDate() + '-' + (dt.getMonth() + 1) + '-' + dt.getFullYear();
+    } else {
+        return date + " " + month;
+    }
+}
+
+function getTime(myDate) {
+    const time = new Date(myDate.toString()).toLocaleTimeString('en-US', {
+        timeStyle: 'short',
+        hour12: false,
+        timeZone: 'Asia/Ho_Chi_Minh'
+    });
+    return time;
+}
+
+
+
+
+module.exports = { formatAMPM, formatDate, formatDateTime, getTime };

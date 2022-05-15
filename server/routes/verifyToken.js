@@ -25,5 +25,14 @@ const verifyTokenAndAuthorization = (req,res,next)=>{
         }
     });
 }
+const verifyTokenAndAuthorizationAdmin = (req,res,next)=>{
+    verifyToken(req,res,()=>{
+        if(req.user.id && req.user.isAdmin){
+            next();
+        }else{
+            return res.status(403).json("You are not allow to do that");
+        }
+    });
+}
 
-module.exports = {verifyToken, verifyTokenAndAuthorization};
+module.exports = {verifyToken, verifyTokenAndAuthorization,verifyTokenAndAuthorizationAdmin};

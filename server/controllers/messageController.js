@@ -3,7 +3,7 @@ const User = require('../models/userModel');
 const Conversation = require('../models/conversationModel');
 const { v4: uuid } = require('uuid');
 const AWS = require('aws-sdk');
-const jwt = require('jsonwebtoken');    
+const jwt = require('jsonwebtoken');
 const NotificationType = require('../constants/notification_contants');
 
 AWS.config.update({
@@ -12,16 +12,16 @@ AWS.config.update({
     region: process.env.REGION
 });
 const s3 = new AWS.S3({
-    accessKeyId:process.env.ACCESS_KEY_ID,
-    secretAccessKey:process.env.SECRET_KEY_ID
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_KEY_ID
 });
 
 const CLOUD_FONT_URL = 'https://d3pgq3xdjygd77.cloudfront.net/';
-module.exports.sendMessage = async (req,res)=>{
-    const {content,conversation_id,type} = req.body;
+module.exports.sendMessage = async (req, res) => {
+    const { content, conversation_id, type } = req.body;
 
     const newMessage = {
-        sender_id:req.user.id,
+        sender_id: req.user.id,
         content,
         type,
         conversation_id
@@ -29,49 +29,49 @@ module.exports.sendMessage = async (req,res)=>{
 
     try {
         const messageQuery = await Message.create(newMessage);
-        const messageDoc1 = await messageQuery.populate('sender_id',"first_name last_name image_url");
+        const messageDoc1 = await messageQuery.populate('sender_id', "first_name last_name image_url");
         const messageDoc2 = await messageDoc1.populate("conversation_id");
-        const message = await User.populate(messageDoc2,{
-            path:"conversation_id.member",
-            select:"first_name last_name image_url email"
+        const message = await User.populate(messageDoc2, {
+            path: "conversation_id.member",
+            select: "first_name last_name image_url email"
         });
-        await Conversation.findByIdAndUpdate(req.body.conversation_id,{
-            latestMessage:message,
+        await Conversation.findByIdAndUpdate(req.body.conversation_id, {
+            latestMessage: message,
         });
-        res.json(message); 
+        res.json(message);
     } catch (error) {
         console.log(error);
     }
 }
 
-module.exports.sendMessageNotification = async (req,res)=>{
-    const {content,conversation_id,type} = req.body;
+module.exports.sendMessageNotification = async (req, res) => {
+    const { content, conversation_id, type } = req.body;
     const newMessage = {
-        sender_id:req.user.id,
+        sender_id: req.user.id,
         content,
         type,
         conversation_id
     }
     try {
         const messageQuery = await Message.create(newMessage);
-        const messageDoc1 = await messageQuery.populate('sender_id',"first_name last_name image_url");
+        const messageDoc1 = await messageQuery.populate('sender_id', "first_name last_name image_url");
         const messageDoc2 = await messageDoc1.populate("conversation_id");
-        const message = await User.populate(messageDoc2,{
-            path:"conversation_id.member",
-            select:"first_name last_name image_url email"
+        const message = await User.populate(messageDoc2, {
+            path: "conversation_id.member",
+            select: "first_name last_name image_url email"
         });
-        await Conversation.findByIdAndUpdate(req.body.conversation_id,{
-            latestMessage:message,
+        await Conversation.findByIdAndUpdate(req.body.conversation_id, {
+            latestMessage: message,
         });
-        res.json(message); 
+        res.json(message);
     } catch (error) {
         console.log(error);
     }
 }
 
-module.exports.sendMessageImageVideo = async (req,res)=>{
-    const {conversation_id,type} = req.body;
-    if(req.file){
+module.exports.sendMessageImageVideo = async (req, res) => {
+    const { conversation_id, type } = req.body;
+    if (req.file) {
         const video = req.file.originalname.split('.');
         const fileType = video[video.length - 1];
         const filePath = `${uuid() + Date.now().toString()}.${fileType}`;
@@ -81,42 +81,42 @@ module.exports.sendMessageImageVideo = async (req,res)=>{
             Key: filePath,
             Body: req.file.buffer
         }
-        s3.upload(params,async (err, data)=>{
+        s3.upload(params, async (err, data) => {
             if (err) {
                 res.status(500).json(error);
-            }else{
+            } else {
                 const newMessage = {
-                    sender_id:req.user.id,
-                    content:`${CLOUD_FONT_URL}${filePath}`,
+                    sender_id: req.user.id,
+                    content: `${CLOUD_FONT_URL}${filePath}`,
                     type,
                     conversation_id
                 }
                 try {
                     const messageQuery = await Message.create(newMessage);
-                    const messageDoc1 = await messageQuery.populate('sender_id',"first_name last_name image_url");
+                    const messageDoc1 = await messageQuery.populate('sender_id', "first_name last_name image_url");
                     const messageDoc2 = await messageDoc1.populate("conversation_id");
-                    const message = await User.populate(messageDoc2,{
-                        path:"conversation_id.member",
-                        select:"first_name last_name image_url email"
+                    const message = await User.populate(messageDoc2, {
+                        path: "conversation_id.member",
+                        select: "first_name last_name image_url email"
                     });
-                    await Conversation.findByIdAndUpdate(req.body.conversation_id,{
-                        latestMessage:message,
+                    await Conversation.findByIdAndUpdate(req.body.conversation_id, {
+                        latestMessage: message,
                     });
-                    res.json(message); 
+                    res.json(message);
                 } catch (error) {
                     console.log(error);
                 }
             }
         })
-    }else{
-        return res.status(500).json({message:"Không có file nào được chọn"}); 
+    } else {
+        return res.status(500).json({ message: "Không có file nào được chọn" });
     }
 }
 
-module.exports.sendMessageImage = async (req,res)=>{
-    const {conversation_id,type} = req.body;
-    
-    if(req.file){
+module.exports.sendMessageImage = async (req, res) => {
+    const { conversation_id, type } = req.body;
+
+    if (req.file) {
         const image = req.file.originalname.split('.');
         const fileType = image[image.length - 1];
         const filePath = `${uuid() + Date.now().toString()}.${fileType}`;
@@ -126,41 +126,41 @@ module.exports.sendMessageImage = async (req,res)=>{
             Key: filePath,
             Body: req.file.buffer
         }
-        s3.upload(params,async (err, data)=>{
+        s3.upload(params, async (err, data) => {
             if (err) {
                 res.status(500).json(error);
-            }else{
+            } else {
                 const newMessage = {
-                    sender_id:req.user.id,
-                    content:`${CLOUD_FONT_URL}${filePath}`,
+                    sender_id: req.user.id,
+                    content: `${CLOUD_FONT_URL}${filePath}`,
                     type,
                     conversation_id
                 }
                 try {
                     const messageQuery = await Message.create(newMessage);
-                    const messageDoc1 = await messageQuery.populate('sender_id',"first_name last_name image_url");
+                    const messageDoc1 = await messageQuery.populate('sender_id', "first_name last_name image_url");
                     const messageDoc2 = await messageDoc1.populate("conversation_id");
-                    const message = await User.populate(messageDoc2,{
-                        path:"conversation_id.member",
-                        select:"first_name last_name image_url email"
+                    const message = await User.populate(messageDoc2, {
+                        path: "conversation_id.member",
+                        select: "first_name last_name image_url email"
                     });
-                    await Conversation.findByIdAndUpdate(req.body.conversation_id,{
-                        latestMessage:message,
+                    await Conversation.findByIdAndUpdate(req.body.conversation_id, {
+                        latestMessage: message,
                     });
-                    res.json(message); 
+                    res.json(message);
                 } catch (error) {
                     console.log(error);
                 }
             }
         })
-    }else{
-        return res.status(500).json({message:"Không có file nào được chọn"}); 
+    } else {
+        return res.status(500).json({ message: "Không có file nào được chọn" });
     }
 }
 
-module.exports.sendMessageFile = async (req,res)=>{
-    const {conversation_id,type} = req.body;
-    if(req.file){
+module.exports.sendMessageFile = async (req, res) => {
+    const { conversation_id, type } = req.body;
+    if (req.file) {
         const myFile = req.file.originalname.split('.');
         const fileName = myFile[0];
         const fileType = myFile[myFile.length - 1];
@@ -170,62 +170,70 @@ module.exports.sendMessageFile = async (req,res)=>{
             Key: filePath,
             Body: req.file.buffer
         }
-        s3.upload(params,async (err, data)=>{
+        s3.upload(params, async (err, data) => {
             if (err) {
                 res.status(500).json(error);
-            }else{
+            } else {
                 const newMessage = {
-                    sender_id:req.user.id,
-                    content:`${CLOUD_FONT_URL}${filePath}`,
+                    sender_id: req.user.id,
+                    content: `${CLOUD_FONT_URL}${filePath}`,
                     type,
                     conversation_id
                 }
                 try {
                     const messageQuery = await Message.create(newMessage);
-                    const messageDoc1 = await messageQuery.populate('sender_id',"first_name last_name image_url");
+                    const messageDoc1 = await messageQuery.populate('sender_id', "first_name last_name image_url");
                     const messageDoc2 = await messageDoc1.populate("conversation_id");
-                    const message = await User.populate(messageDoc2,{
-                        path:"conversation_id.member",
-                        select:"first_name last_name image_url email"
+                    const message = await User.populate(messageDoc2, {
+                        path: "conversation_id.member",
+                        select: "first_name last_name image_url email"
                     });
-                    await Conversation.findByIdAndUpdate(req.body.conversation_id,{
-                        latestMessage:message,
+                    await Conversation.findByIdAndUpdate(req.body.conversation_id, {
+                        latestMessage: message,
                     });
-                    res.json(message); 
+                    res.json(message);
                 } catch (error) {
                     console.log(error);
                 }
             }
         })
-    }else{
-        return res.status(500).json({message:"Không có file nào được chọn"}); 
+    } else {
+        return res.status(500).json({ message: "Không có file nào được chọn" });
     }
 }
 
-module.exports.getAllMessage = async (req,res)=>{
-    const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit);
-    
+module.exports.getAllMessage = async (req, res) => {
+    const page = req.query.page;
+    console.log('a');
     try {
-        const numberRecord = await Message.countDocuments();
-        const messages = await Message.find({conversation_id:req.params.conversationId})
-                .populate("sender_id","first_name last_name image_url email")
-                .populate('conversation_id');
-        res.status(200).json(messages);
+        const total = await Message.find({ conversation_id: req.params.conversationId }).length;
+        const messages = await Message.find({ conversation_id: req.params.conversationId })
+            .populate("sender_id", "first_name last_name image_url email")
+            .populate('conversation_id').sort({ createdAt: -1 }).skip(page * 10).limit(10);
+        const result = {
+            total,
+            list: messages
+        }
+        return res.status(200).json(result);
     } catch (error) {
         res.status(500).json(error);
         console.log(error.message)
     }
 }
 
-module.exports.updateMessage = async (req,res)=>{
-    const {lastestMessage} = req.body;
+module.exports.updateMessage = async (req, res) => {
+    const { lastestMessage } = req.body;
     const readedBy = JSON.parse(req.body.readBy);
     try {
-        const messageUpdated = await Message.findOneAndUpdate({_id:lastestMessage._id},{
-            readBy:readedBy
+        const isExist = await Message.findOne({
+            _id: lastestMessage._id, readBy: { $in: [req.user.id] }
         })
-        res.status(200).json(messageUpdated);
+        if (!isExist) {
+            const messageUpdated = await Message.findOneAndUpdate({ _id: lastestMessage._id }, {
+                readBy: readedBy
+            }, { new: true }).populate('readBy');
+            res.status(200).json(messageUpdated);
+        }
     } catch (error) {
         res.status(500).json(error);
     }

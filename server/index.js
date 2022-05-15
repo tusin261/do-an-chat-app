@@ -10,6 +10,7 @@ const chatRoute = require('./routes/chatRoute');
 const messageRoute = require('./routes/messageRoute');
 const notificationRoute = require('./routes/notificationRoute');
 const postRoute = require('./routes/postRoute');
+const adminRoute = require('./routes/adminRoute');
 const PORT = process.env.PORT;
 app.use(express.urlencoded({
     extended: true
@@ -22,6 +23,7 @@ app.use('/api/chats', chatRoute);
 app.use('/api/messages', messageRoute);
 app.use('/api/notifications',notificationRoute);
 app.use('/api/posts',postRoute);
+app.use('/api/admin',adminRoute);
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
         console.log('Connect successful');
@@ -34,7 +36,7 @@ const server = app.listen(PORT, () => {
 });
 //sau 60s k hoat dong thi dong ket noi
 const io = require('socket.io')(server, {
-    pingTimeout: 60000,
+    pingTimeout:1200000,
     cors: {
         origin: "http://localhost:3000",
     }
@@ -64,9 +66,6 @@ io.on('connection', (socket) => {
         socket.join(room._id);
         console.log("User join " + room._id);
     });
-
-    
-
     socket.on('send message',(newMessage)=>{
         if(newMessage.conversation_id.isGroupChat){
             const listReceive = newMessage.conversation_id.member;
@@ -138,6 +137,13 @@ io.on('connection', (socket) => {
             socket.to(getUser(receiverId).socketId).emit("new request accept friend",data);
         }
     });
+    socket.on('like',({ receiverId, data })=>{
+        const isOnline = users.find((e)=>e.userId == receiverId);
+        console.log(data);
+        if(isOnline){
+            socket.to(getUser(receiverId).socketId).emit("new noti like",data);
+        }
+    })
 
     socket.on('out group',(conversation)=>{
         const listReceive = conversation.data.member;

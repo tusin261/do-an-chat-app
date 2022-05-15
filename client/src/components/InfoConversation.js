@@ -55,12 +55,9 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                     <div className='ms-2'>
                         <h5 className='mb-0'>{!selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name}</h5>
                         <span><FiberManualRecordIcon style={{ fontSize: 16, color: "#B6FFCE" }} /></span>
-                        {caller && <><p>{caller.first_name} is calling</p> <button onClick={acceptCall}>Chap nhan</button></>}
                     </div>
                 </div>
                 <div className='d-flex align-items-center'>
-                    <span><CallIcon style={{ fontSize: 38, color: "blue" }} /></span>
-                    <span className="btn" onClick={callVideo}><VideocamIcon style={{ fontSize: 38, color: "blue" }} /></span>
                     <span onClick={showDetailModal}  role="button"><MoreVertIcon style={{ fontSize: 38, color: "blue" }} /></span>
                     {showDetailConversation && <ModalDetailConversation 
                         showDetailConversation={showDetailConversation} 

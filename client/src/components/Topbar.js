@@ -21,9 +21,10 @@ const Topbar = ({ socket, setValue, value }) => {
   const imageInput = useRef();
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState();
-  const [invi, setInvi] = useState(true);
+  const [invisible, setInvisible] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const { notification, notificationDispatch } = useContext(NotificationContext);
 
   const handleChange = (event, newValue) => {
     console.log(newValue);
@@ -84,11 +85,12 @@ const Topbar = ({ socket, setValue, value }) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
   return (
     <div className='col-md-12 py-1'>
       <div className='row align-items-center'>
         <div className='col-md-2'>
-          <h4>Test</h4>
+          <h4 className='ms-3'>zCHAT</h4>
         </div>
         <div className='col-md-8'>
           <div className='row'>
@@ -104,7 +106,7 @@ const Topbar = ({ socket, setValue, value }) => {
           <div className='row justify-content-between'>
             <div className='col-md-7 text-end'>
               <span role="button">
-                <Badge color="error" variant="dot" invisible={invi}>
+                <Badge color="error" variant="dot" invisible={invisible}>
                   <NotificationsNoneOutlinedIcon sx={{ fontSize: 32 }} onClick={handleSeenNotification} />
                 </Badge></span>
               <Menu

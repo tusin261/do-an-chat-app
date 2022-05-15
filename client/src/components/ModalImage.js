@@ -1,9 +1,8 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Button, Modal } from 'react-bootstrap'
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 
 const ModalImage = ({ show, onHide, image }) => {
-
 
     return (
         <Modal show={show} onHide={onHide}>

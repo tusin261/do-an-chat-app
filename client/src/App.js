@@ -8,22 +8,33 @@ import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar';
 import Message from './components/Message';
 import Confirm from './Pages/Confirm';
+import RequireAuth from './RequireAuth';
+import RequireAuthAdmin from './RequireAuthAdmin';
+import HandleRedirect from './HandleRedirect';
+
 function App() {
 
   return (
     <Routes>
       <Route path="/" element={<LoginForm />}></Route>
       <Route path="/register" element={<SignUpForm />}></Route>
-
-      <Route path="/chat" element={
-        <ProtectedRoute roleAdmin={false}>
-          <Chat />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin" element={
-        <ProtectedRoute roleAdmin={true} >
-          <Admin />
-        </ProtectedRoute>} />
+      <Route path="/handle-redirect" element={<HandleRedirect />}></Route>
+      <Route
+        path="/chat"
+        element={
+          <RequireAuth>
+            <Chat />
+          </RequireAuth>
+        }
+      ></Route>
+      <Route
+        path="/admin"
+        element={
+          <RequireAuthAdmin>
+            <Admin />
+          </RequireAuthAdmin>
+        }
+      ></Route>
       <Route path='confirm-email/:userId' element={<Confirm />} />
       <Route
         path="*"

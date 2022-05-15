@@ -40,6 +40,7 @@ const Status = ({updateList,setPosts}) => {
             setSelectedVideo(null);
         }
     }
+    
 
     const handleSubmit = async () => {
         if (statusRef.current.value == '') {
@@ -56,7 +57,6 @@ const Status = ({updateList,setPosts}) => {
             //updateList();
             setDefaultInput();
             setPosts((preState)=>[data,...preState]);
-
         } else {
             //post with media
             if (selectedImage) {

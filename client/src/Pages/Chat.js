@@ -19,21 +19,24 @@ import InfoConversation from '../components/InfoConversation';
 import { NotificationContext } from '../context/NotificationContext'
 import { ChatContext } from '../context/ChatContext'
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { Box, CircularProgress } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+
 let socket;
 const Chat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
-  const notificationContext = useContext(NotificationContext);
   const { conversationState, conversationDispatch } = useContext(ChatContext);
   const [loading, setLoading] = useState(false);
-  const [lastMessage, setLastMessage] = useState(null);
   const [listImage, setListImage] = useState([]);
   const [listFile, setListFile] = useState([]);
   const [value, setValue] = useState(1);
-
+  const [newMessage, setNewMessage] = useState();
+  const [isSelectedInput, setIsSelectedInput] = useState(false);
+  const [page, setPage] = useState(0);
+  const [length, setLength] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [online,setOnline] = useState([]);
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   const inputMessageRef = useRef()
@@ -44,17 +47,20 @@ const Chat = () => {
       "Authorization": `Bearer ${user.accessToken}`
     },
   };
+  // const onFocus = ()=>{
+  //   setIsSelectedInput(true);
+  // }
   const sendMessage = async () => {
     try {
       const { data } = await axios.post("/api/messages", {
-        content: newMessage,
+        content: inputMessageRef.current.value,
         conversation_id: selectedConversation._id,
         type: 'text'
       }, config);
       socket.emit('send message', data);
-      setMessages([...messages, data]);
-      setSeenMessage();
-      inputMessageRef.current.focus();
+      setMessages((pre) => [data, ...pre]);
+      setNewMessage(data);
+      //inputMessageRef.current.focus();
       inputMessageRef.current.value = ''
     } catch (error) {
       console.log(error);
@@ -69,7 +75,7 @@ const Chat = () => {
     formData.append("type", "image");
     try {
       const { data } = await axios.post("/api/messages/image", formData, config);
-      const newListMess = [...messages, data];
+      const newListMess = [data, ...messages];
       socket.emit('send message', data);
       setMessages(newListMess);
     } catch (error) {
@@ -85,7 +91,7 @@ const Chat = () => {
     formData.append("type", "file");
     try {
       const { data } = await axios.post("/api/messages/file", formData, config);
-      const newListMess = [...messages, data];
+      const newListMess = [data, ...messages];
       socket.emit('send message', data);
       setMessages(newListMess);
     } catch (error) {
@@ -113,7 +119,7 @@ const Chat = () => {
     formData.append("type", "video");
     try {
       const { data } = await axios.post("/api/messages/video", formData, config);
-      const newListMess = [...messages, data];
+      const newListMess = [data, ...messages];
       socket.emit('send message', data);
       setMessages(newListMess);
     } catch (error) {
@@ -121,7 +127,7 @@ const Chat = () => {
     }
   }
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && newMessage !== '') {
+    if (e.key === 'Enter' && inputMessageRef.current.value !== '') {
       sendMessage();
     }
   }
@@ -132,20 +138,22 @@ const Chat = () => {
   const setSeenMessage = async () => {
     const lastestMessage = messages.pop();
     let readBy = [];
-    readBy.push(user);
-    const jsonData = {
-      lastestMessage,
-      readBy: JSON.stringify(readBy)
-    }
-    console.log(lastestMessage.sender_id._id != user._id);
-    console.log("lastestMessage",lastestMessage);
-    if (lastestMessage.sender_id._id != user._id) {
-      try {
-        const { data } = await axios.post("/api/messages/update-message", jsonData, config);
-        getList();
-      } catch (error) {
-        console.log(error);
+    if (lastestMessage) {
+      const isExist = lastestMessage.readBy.filter((e) => e == user._id);
+      readBy.push(user._id);
+      const jsonData = {
+        lastestMessage,
+        readBy: JSON.stringify(readBy)
       }
+      if (lastestMessage.sender_id._id != user._id && isExist.length == 0) {
+        try {
+          const { data } = await axios.post("/api/messages/update-message", jsonData, config);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    } else {
+      return;
     }
   }
 
@@ -160,32 +168,42 @@ const Chat = () => {
     }
   }
 
-  const updateConversation = async (newMessage) => {
-    if (newMessage.conversation_id.isGroupChat) {
-      getList();
-    } else {
-      const receiver = newMessage.conversation_id.member.find(i => i._id !== user._id);
-      try {
-        const { data } = await axios.post("/api/chats", { userId: receiver._id }, config);
-        console.log(data);
-        getList();
-        setLoading(false);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-  }
+  useEffect(() => {
+    getList()
+  }, [newMessage]);
 
   useEffect(() => {
     socket = io("http://localhost:5000");
+
+    socket.on('notification new group', data => {
+      console.log('assss');
+      setNewMessage(data);
+    })
+
+    socket.on('new message', (newMess) => {
+      if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
+        console.log('messssssss');
+        setNewMessage(newMess);
+      } else {
+        setMessages((pre) => [newMess, ...pre]);
+      }
+    });
+
+    socket.on('new message group', (newMess) => {
+      if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
+        console.log('grouppppppp');
+        setNewMessage(newMess);
+      } else {
+        setMessages((pre) => [newMess, ...pre]);
+      }
+    });
   }, [])
 
   useEffect(() => {
     if (socket) {
       socket.emit('addUser', user);
       socket.on('getUsers', data => {
-        console.log(data);
+        setOnline(data);
       })
     }
   }, [user]);
@@ -193,56 +211,27 @@ const Chat = () => {
   useEffect(() => {
     if (selectedConversation) {
       socket.emit('join chat', selectedConversation);
+      getMessage();
+      selectedChatCompare.current = selectedConversation;
     }
   }, [selectedConversation]);
 
   const getMessage = async () => {
     try {
-      const { data } = await axios.get(`/api/messages/${selectedConversation._id}`, config);
-      setMessages(data);
-      //setLastMessage(data.pop());
+      const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${page}`, config);
+      const listMess = data.list;
+      const arr = [...messages, ...listMess];
+      setMessages(arr);
+      if (listMess.length === 0 || listMess.length < 10) {
+        setHasMore(false);
+      }
+      setLength(listMess.total);
+      setPage(page + 1);
       setLoading(false);
     } catch (error) {
       console.log(error);
     }
   }
-  useEffect(() => {
-    //setLoading(true);
-    if (selectedConversation) {
-      getMessage();
-      selectedChatCompare.current = selectedConversation;
-    }
-  }, [selectedConversation])
-
-
-  //New messge 
-  useEffect(() => {
-    socket.on('new message', (newMess) => {
-      console.log('a');
-      if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        console.log('trong');
-        updateConversation(newMess);
-      } else {
-        console.log('ngoai');
-        setMessages([...messages, newMess]);
-      }
-    })
-  }, [messages])
-
-
-  //New messge group
-  useEffect(() => {
-    socket.on('new message group', (newMess) => {
-      console.log('e');
-      if (!selectedChatCompare.current || selectedChatCompare.current._id !== newMess.conversation_id._id) {
-        console.log('ngoai group');
-        updateConversation(newMess);
-      } else {
-        console.log('trong group');
-        setMessages([...messages, newMess]);
-      }
-    })
-  }, [messages])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -255,20 +244,26 @@ const Chat = () => {
 
   useEffect(() => {
     if (scrollRef.current) {
-      console.log('scrool')
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
+  // useEffect(()=>{
+  //   if(selectedConversation && messages.length > 0){
+  //     setSeenMessage();
+  //   }
+  // },[isSelectedInput,newMessage])
 
   return (
     <div className='container-fluid'>
       <div className='row'>
         <Topbar socket={socket} setValue={setValue} value={value} />
       </div>
-      {value == 1 ?<div className='row justify-content-between'>
+      {value == 1 ? <div className='row justify-content-between'>
         <div className='col-lg-3 overflow-auto border rounded box-sidebar'>
-          <Sidebar setSelectedConversation={setSelectedConversation} messages={messages} socket={socket} />
+          <Sidebar setSelectedConversation={setSelectedConversation}
+           messages={messages}
+            socket={socket} online={online}/>
         </div>
         <div className='col-lg-9' style={{ height: "90vh" }}>
           {selectedConversation && <InfoConversation
@@ -276,19 +271,32 @@ const Chat = () => {
             selectedConversation={selectedConversation}
             socket={socket} listImage={listImage} listFile={listFile}
             setMessages={setMessages} messages={messages} />}
-          <div className='box-chat border rounded'>
-            {selectedConversation && messages.map(i => (
+          <div className='box-chat border rounded d-flex flex-column-reverse' id='scrollableDiv'>
+            {selectedConversation &&
+              <InfiniteScroll
+                style={{ display: 'flex', flexDirection: 'column-reverse' }}
+                inverse={true}
+                scrollableTarget="scrollableDiv"
+                dataLength={length}
+                next={getMessage}
+                hasMore={hasMore}>
+              </InfiniteScroll>}
+            {selectedConversation && messages.map((i, index, currentArr) => (
               <div className='p-2' key={i._id}>
-                <Message message={i} own={i.sender_id._id == user._id} lastMessage={lastMessage} />
+                {currentArr.length - 1 == index ? <Message message={i} own={i.sender_id._id == user._id}
+                  isLastMessage={true} /> : <Message message={i} own={i.sender_id._id == user._id}
+                    isLastMessage={false}
+                />}
                 <div ref={scrollRef}></div>
               </div>
             ))}
           </div>
 
+          {/* onChange={(e) => setNewMessage(e.target.value)} */}
+          {/* onFocus={onFocus} onBlur={onBlur} */}
           {selectedConversation &&
             <div className='mt-1 d-flex justify-content-between align-items-center'>
               <input type='text' className="form-control w-65"
-                onChange={(e)=>setNewMessage(e.target.value)}
                 ref={inputMessageRef}
                 onKeyPress={handleKeyPress}
                 placeholder="Nhập gì đó ...." />
@@ -301,14 +309,13 @@ const Chat = () => {
               <div className="dropdown-menu">
                 <input type='file' id='video' className='d-none' onChange={sendMessageVideo} />
                 <span className="dropdown-item" ><label htmlFor='video'><VideoFileOutlinedIcon /> Gui video</label></span>
-                <span className="dropdown-item" ><LocalPhoneOutlinedIcon /> Goi dien</span>
-                <span className="dropdown-item"><DuoOutlinedIcon /> Goi video</span>
               </div>
             </div>}
         </div>
-      </div>: <Feed socket={socket}/>}
-      
-    </div>
+      </div> : <Feed socket={socket} />
+      }
+
+    </div >
   )
 }
 

@@ -1,10 +1,7 @@
 import { useContext, useState } from "react";
 import { Link } from 'react-router-dom'
-import { Container, Button, Row, Col, Form } from 'react-bootstrap'
-import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 import { loginCall } from '../ApiCall';
-import { AuthContext } from "../context/AuthContext";
 import { useAuth } from "../context/hooks";
 import CircularProgress from '@mui/material/CircularProgress';
 import * as API from '../constants/ManageURL'
@@ -25,8 +22,9 @@ const LoginForm = () => {
       return;
     }
     await loginCall({ email, password }, dispatch);
-    path = '/chat';
-    navigate(path);
+    // path = '/chat';
+    // navigate(path);
+    navigate('/handle-redirect');
 
   }
 

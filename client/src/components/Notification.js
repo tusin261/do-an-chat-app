@@ -6,10 +6,8 @@ import * as API from '../constants/ManageURL'
 import useAuth from '../context/AuthContext';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
-const Notification = ({ socket,setValue,value }) => {
+const Notification = ({ socket,setValue,value,setNewNotifi }) => {
     const { user } = useAuth();
-    const [oldMember, setOldMember] = useState([]);
-    const [newMember, setNewMember] = useState([]);
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -36,7 +34,10 @@ const Notification = ({ socket,setValue,value }) => {
         if (type == 'add_group' || type == 'kick_mem' || type == 'out_group' ||
             type == 'change_img' || type == 'add_mem') {
             return 'Nhóm';
-        } else {
+        }else if(type == 'like'){
+            return 'Tin';
+        }
+         else {
             return 'Bạn bè'
         }
     }
@@ -45,7 +46,9 @@ const Notification = ({ socket,setValue,value }) => {
         const content = notification.content;
         for (let i = 0; i < notification.receiver.length; i++) {
             if (user._id == notification.receiver[i]._id) {
-                if(notification.type == 'add_friend' || notification.type == 'accept_friend'){
+                if(notification.type == 'add_friend' || 
+                    notification.type == 'accept_friend' || notification.type == 'add_group' || 
+                    notification.type == 'like'){
                     return `${notification.sender_id.first_name} ${content}`;
                 }else{
                     return `Bạn ${content}`;
@@ -72,17 +75,26 @@ const Notification = ({ socket,setValue,value }) => {
     useEffect(() => {
         socket?.on('notification new group', data => {
             getListNoti();
+            setNewNotifi(false);
         })
         socket?.on('new request friend', data => {
             console.log(data);
             getListNoti();
+            setNewNotifi(false);
         });
         socket?.on('new request accept friend', data => {
             console.log(data);
             getListNoti();
+            setNewNotifi(false);
         });
         
-    }, [notification.notifications]);
+        socket?.on('new noti like', data=>{
+            console.log(data);
+            getListNoti();
+            setNewNotifi(false);
+        })
+
+    }, []);
 
     return (
         <>
@@ -101,7 +113,7 @@ const Notification = ({ socket,setValue,value }) => {
                             <ListItemAvatar>
                                 <Avatar alt="avata" src={e.sender_id.image_url} />
                             </ListItemAvatar>
-                            <ListItemText primary={getType(e)} secondary={getContent(e)} />
+                            <ListItemText primary={<><b>{getType(e)}</b></>} secondary={getContent(e)} />
                         </ListItemButton>
                     </ListItem>
                 ))}

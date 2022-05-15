@@ -1,17 +1,22 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import BoxConversation from './BoxConversation'
+import ListOnline from './ListOnline'
 import axios from 'axios'
 import useAuth from '../context/AuthContext';
 import Search from './Search';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import { ChatContext } from '../context/ChatContext'
 import Alert from '@mui/material/Alert';
-import { Avatar, Box, Chip, CircularProgress, Snackbar } from '@mui/material';
+import { Avatar, Box, Chip, CircularProgress, Divider, Snackbar } from '@mui/material';
 import { NotificationContext } from '../context/NotificationContext'
 import * as API from '../constants/ManageURL'
 import SearchIcon from '@mui/icons-material/Search';
-
-const Sidebar = ({ setSelectedConversation, messages, socket }) => {
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+const Sidebar = ({ setSelectedConversation, messages, socket,online }) => {
   const { user } = useAuth();
   //group
   const [groupChatName, setGroupChatName] = useState('');
@@ -22,7 +27,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
   const inputSearch = useRef();
   const { conversationState, conversationDispatch } = useContext(ChatContext);
   const [loading, setLoading] = useState(false);
-
+  const [value, setValue] = useState('1');
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -39,13 +44,19 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
     },
   };
 
-  const getList = async () => {
+  const handleChangeType = (e) => {
+    setValue(e.target.value);
+  }
+
+  const getList = async (active) => {
     conversationDispatch({ type: "GET_CHATS_START" });
     setLoading(true);
     try {
       const { data } = await axios.get("/api/chats", config);
       conversationDispatch({ type: "GET_CHATS_SUCCESS", payload: data });
-      setLoading(false);
+      if (active) {
+        setLoading(false);
+      }
     } catch (error) {
       conversationDispatch({ type: "GET_CHATS_FAILURE" });
       console.log(error);
@@ -54,8 +65,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
 
   const handleClickConversation = (conversations) => {
     setSelectedConversation(conversations);
-    //   const newListNoti = notificationContext.notifications.filter(i => i.id !== conversations._id);
-    //   notificationContext.setNotifications(newListNoti);
+
   }
 
   const handleClickItemInList = (item) => {
@@ -121,15 +131,12 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
     }
   }
 
-
   useEffect(() => {
-    socket?.on('notification new group', data => {
-      getList();
-    })
-  }, [conversationState]);
-
-  useEffect(() => {
-    getList();
+    let active = true;
+    getList(active);
+    return () => {
+      active = false;
+    };
   }, [messages]);
 
 
@@ -160,7 +167,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
                 </div>
                 <div className="mb-1">
                   <input type="text" className="form-control" ref={inputSearch} onChange={searchMember} placeholder='Nhập tên để thêm vào nhóm' />
-                  
+
                 </div>
                 <div className='mb-1 d-flex flex-wrap'>
                   {listMember.length > 0 && listMember.map((user, index) => (
@@ -188,25 +195,38 @@ const Sidebar = ({ setSelectedConversation, messages, socket }) => {
               <div className='d-flex justify-content-end'>
                 <button className='btn btn-primary mt-1' data-bs-dismiss="modal" onClick={createGroup}>Tạo nhóm</button>
               </div>
-
             </div>
-
           </div>
         </div>
       </div>
       <Search setSelectedConversation={setSelectedConversation} socket={socket} />
+      <FormControl>
+        <RadioGroup row
+          aria-labelledby="demo-controlled-radio-buttons-group"
+          name="controlled-radio-buttons-group"
+          value={value}
+          onChange={handleChangeType}
+        >
+          <FormControlLabel value="1" control={<Radio />} label="Trò chuyện" />
+          <FormControlLabel value="2" control={<Radio />} label="Bạn bè" />
+        </RadioGroup>
+      </FormControl>
+      <Divider />
       {loading && <Box sx={{ display: 'flex' }}>
         <CircularProgress />
       </Box>}
-      <div className='list-group'>
-        {conversationState.chats.map(c => (
-          <div key={c._id} onClick={() => {
-            handleClickConversation(c)
-          }}>
-            <BoxConversation con={c} />
-          </div>
-        ))}
-      </div>
+      {value == '1' ?
+        <div className='list-group'>
+          {conversationState.chats.map(c => (
+            <div key={c._id} onClick={() => {
+              handleClickConversation(c)
+            }}>
+              <BoxConversation con={c} />
+            </div>
+          ))}
+        </div> : <div className='row'>
+          <ListOnline online={online} setSelectedConversation={setSelectedConversation} />
+        </div>}
     </div>
   )
 }

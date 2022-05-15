@@ -15,12 +15,18 @@ const s3 = new AWS.S3({
 const CLOUD_FONT_URL = 'https://d3pgq3xdjygd77.cloudfront.net/';
 
 module.exports.getAllPost = async (req, res) => {
+    const page = req.query.page;
     try {
         const currentUser = await user_model.findById(req.user.id);
         const listFriend = [...currentUser.listFriend,req.user.id];
+        const total = await Post.find({userId:{$in:listFriend}}).length;
         const listPost = await Post.find({userId:{$in:listFriend}}).populate('userId')
-        .populate('likes').sort({createdAt:-1});
-        return res.status(200).json(listPost);
+        .populate('likes').sort({createdAt:-1}).skip(page*10).limit(10);
+        const result = {
+            total,
+            list:listPost
+        }
+        return res.status(200).json(result);
     } catch (error) {
         return res.status(500).json(error);
     }
