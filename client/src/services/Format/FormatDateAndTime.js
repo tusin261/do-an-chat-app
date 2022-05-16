@@ -45,7 +45,7 @@ function formatDateTime(t) {
     } else if (diffDays === -1) {
         return getTime(t);
     } else if (diffYears === 0 && diffDays === 1) {
-        return "Yesterday";
+        return "Hôm qua";
     } else if (diffYears === 0 && (diffDays > 1 && diffDays < 7)) {
         return fulldays[dt.getDay()];
     } else if (diffYears >= 1) {

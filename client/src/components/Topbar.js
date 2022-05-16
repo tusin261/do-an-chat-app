@@ -5,7 +5,7 @@ import { BaseURL } from '../constants/path_constant';
 import axios from 'axios';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { NotificationContext } from '../context/NotificationContext';
-import { Badge, Menu } from '@mui/material';
+import { Badge, Divider, Menu } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Notification from './Notification';
 import HomeIcon from '@mui/icons-material/Home';
@@ -15,6 +15,9 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import PersonPinIcon from '@mui/icons-material/PersonPin';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+
 const Topbar = ({ socket, setValue, value }) => {
   const { user, dispatch } = useAuth();
   const imageURL = BaseURL.PUBLIC_FOLDER_IMAGE;
@@ -28,6 +31,7 @@ const Topbar = ({ socket, setValue, value }) => {
   const [lastName, setLastName] = useState(user.last_name);
   const [firstName, setFirstName] = useState(user.first_name);
   const [email, setEmail] = useState(user.email);
+  const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmpassword, setConfirmpassword] = useState('');
   const [validFirstName, setValidFirstName] = useState(true);
@@ -36,7 +40,12 @@ const Topbar = ({ socket, setValue, value }) => {
   const [validPassword, setValidPassword] = useState(true);
   const [validConfirmPassword, setValidConfirmPassword] = useState(true);
   const [messageEmail, setMessageEmail] = useState('');
-
+  const [validOldPassword, setValidOldPassword] = useState(true);
+  const [openChangePassword, setOpenChangePassword] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [isErrorUpdate, setIsErrorUpdate] = useState(false);
+  const [messageError, setMessageError] = useState('');
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const handleChange = (event, newValue) => {
     console.log(newValue);
     setValue(newValue);
@@ -70,8 +79,10 @@ const Topbar = ({ socket, setValue, value }) => {
       try {
         const rs = await axios.post("/api/users/updateAvatar", formData, config);
         dispatch({ type: 'UPDATE_IMG', payload: rs.data.image_url });
+        setUpdateSuccess(true);
         // localStorage.setItem("user", JSON.stringify(rs.data));
       } catch (error) {
+        setUpdateSuccess(false);
         console.log(error);
       }
     } else {
@@ -79,7 +90,8 @@ const Topbar = ({ socket, setValue, value }) => {
         first_name: firstName,
         last_name: lastName,
         email: email,
-        new_password: newPassword
+        new_password: newPassword,
+        old_password: password
       }
       const config = {
         headers: {
@@ -87,11 +99,23 @@ const Topbar = ({ socket, setValue, value }) => {
           "Authorization": `Bearer ${user.accessToken}`
         },
       };
-      try {
-        const rs = await axios.post("/api/users/updateInfomation", json, config);
-        dispatch({ type: 'UPDATE_IN4', payload: rs.data });
-      } catch (error) {
-        console.log(error);
+      if (validFirstName && validLastName && validEmail && validOldPassword && validPassword) {
+        try {
+          const rs = await axios.post("/api/users/updateInfomation", json, config);
+          dispatch({ type: 'UPDATE_IN4', payload: rs.data });
+          setIsErrorUpdate(false);
+          setOpenChangePassword(false);
+          setUpdateSuccess(true);
+        } catch (error) {
+          setIsErrorUpdate(true);
+          setMessageError(error.response.data.message);
+          setUpdateSuccess(false);
+          console.log(error.response.data.message);
+        }
+      } else {
+        setIsError(true);
+        setUpdateSuccess(false);
+        return;
       }
     }
   }
@@ -99,7 +123,14 @@ const Topbar = ({ socket, setValue, value }) => {
   const handleClick = () => {
     imageInput.current.click();
   }
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
 
+    setIsError(false);
+    setIsErrorUpdate(false);
+  };
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.substr(0, 5) === 'image') {
@@ -153,6 +184,45 @@ const Topbar = ({ socket, setValue, value }) => {
     }
   }
 
+  const onChangePassword = (e) => {
+    setPassword(e.target.value);
+  }
+
+  const checkValidOldPassword = () => {
+    if (password == '') {
+      setValidOldPassword(false);
+    } else {
+      setValidOldPassword(true);
+    }
+  }
+
+  const onChangeNewPassword = (e) => {
+    setNewPassword(e.target.value);
+  }
+  const checkValidPassword = () => {
+    const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/;
+    if (newPassword == '' || !regexPassword.test(newPassword)) {
+      setValidPassword(false);
+    } else {
+      setValidPassword(true);
+    }
+  }
+
+  const onChangeConfirmPassword = (e) => {
+    setConfirmpassword(e.target.value);
+  }
+  const checkValidConfirmPassword = () => {
+    if (confirmpassword != newPassword || confirmpassword == '') {
+      setValidConfirmPassword(false);
+    } else {
+      setValidConfirmPassword(true);
+    }
+  }
+
+  const openPassword = () => {
+    setOpenChangePassword(!openChangePassword);
+  }
+
 
   return (
     <div className='col-md-12 py-1'>
@@ -189,9 +259,23 @@ const Topbar = ({ socket, setValue, value }) => {
               </Menu>
             </div>
             <div className='col-md-5'>
+              <Snackbar open={updateSuccess} autoHideDuration={6000} onClose={handleCloseToast}>
+                <Alert onClose={handleCloseToast} severity="success" sx={{ width: '100%' }}>
+                  Cập nhật thông tin thành công
+                </Alert>
+              </Snackbar>
+              <Snackbar open={isError} autoHideDuration={6000} onClose={handleCloseToast}>
+                <Alert onClose={handleCloseToast} severity="error" sx={{ width: '100%' }}>
+                  Vui lòng điền đầy đủ thông tin cần thay đổi
+                </Alert>
+              </Snackbar>
+              <Snackbar open={isErrorUpdate} autoHideDuration={6000} onClose={handleCloseToast}>
+                <Alert onClose={handleCloseToast} severity="error" sx={{ width: '100%' }}>
+                  {messageError}
+                </Alert>
+              </Snackbar>
               <div className='row'>
                 <div className='col-md-5'>
-
                 </div>
                 <div className='col-md-1'>
                   <Avatar id="imageDropdown" data-bs-toggle="dropdown" sx={{ width: 32, height: 32 }} src={user.image_url ? user.image_url : imageURL + "userDefault.png"} />
@@ -238,7 +322,27 @@ const Topbar = ({ socket, setValue, value }) => {
                                     onBlur={checkValidEmail} />
                                   <span hidden={validEmail} className="my-2 text-danger text-start">{messageEmail}</span>
                                 </div>
-                                <button type="submit" className="btn btn-primary" data-bs-dismiss="modal" onClick={handleSubmit}>Lưu thay đổi</button>
+                                <Divider />
+                                <button className='btn btn-primary mt-2' onClick={openPassword}>Đổi mật khẩu</button>
+                                {openChangePassword && <><div className="mb-3">
+                                  <label className="form-label">Mật khẩu hiện tại</label>
+                                  <input type="password" className="form-control" placeholder='Nhập mật khẩu hiện tại'
+                                    onChange={onChangePassword} onBlur={checkValidOldPassword} />
+                                  <span hidden={validOldPassword} className="my-2 text-danger text-start">Mật khẩu hiện tại không được để trống</span>
+                                </div>
+                                  <div className="mb-1">
+                                    <label className="form-label">Mật khẩu mới</label>
+                                    <input type="password" className="form-control" placeholder='Nhập mật khẩu mới'
+                                      onChange={onChangeNewPassword} onBlur={checkValidPassword} />
+                                    <span hidden={validPassword} className="my-2 text-danger text-start">Mật khẩu ít nhất 8 kí tự, gồm số chữ và kí tự viết hoa</span>
+                                  </div>
+                                  <div className="mb-3">
+                                    <input type="password" className="form-control" placeholder='Nhập lại mật khẩu mới'
+                                      onChange={onChangeConfirmPassword} onBlur={checkValidConfirmPassword} />
+                                    <span hidden={validConfirmPassword} className="my-2 text-danger text-start">Không trùng với mật khẩu</span>
+                                  </div> </>}
+                                <Divider />
+                                <button type="submit" className="btn btn-primary mt-2" data-bs-dismiss="modal" onClick={handleSubmit}>Lưu thay đổi</button>
                               </div>
                             </div>
                           </div>
@@ -246,6 +350,7 @@ const Topbar = ({ socket, setValue, value }) => {
                       </div>
                     </div>
                   </div>
+
                 </div>
               </div>
             </div>

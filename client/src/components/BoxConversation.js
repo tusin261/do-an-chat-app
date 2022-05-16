@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import { Grid } from '@mui/material';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
-const BoxConversation = ({ con }) => {
+const BoxConversation = ({ con,selectedConversation }) => {
   const { user } = useAuth();
   const getNameConversation = (user, conversation) => {
     return conversation.member[0]._id === user._id ? conversation.member[1].first_name : conversation.member[0].first_name;
@@ -16,7 +16,7 @@ const BoxConversation = ({ con }) => {
     return conversation.member[0]._id === user._id ? conversation.member[1].image_url : conversation.member[0].image_url;
   }
   return (
-    <div className='col-lg-12 p-2 highlight-selected rounded'>
+    <div className={(selectedConversation!=null && con._id == selectedConversation._id)?'col-lg-12 p-2 highlight-selected rounded selected mt-1':'col-lg-12 p-2 highlight-selected rounded mt-1' }>
       <div className="d-flex w-100 justify-content-between align-items-center">
         <img width="32" height="32" className='rounded-circle' alt="100x100" src={con.isGroupChat ? con.group_image : getImageConversation(user, con)} />
         <div className='container-fluid px-2'>

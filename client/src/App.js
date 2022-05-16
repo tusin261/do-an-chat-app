@@ -11,6 +11,7 @@ import Confirm from './Pages/Confirm';
 import RequireAuth from './RequireAuth';
 import RequireAuthAdmin from './RequireAuthAdmin';
 import HandleRedirect from './HandleRedirect';
+import Feed from './components/Feed';
 
 function App() {
 

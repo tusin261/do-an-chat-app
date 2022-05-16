@@ -16,7 +16,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-const Sidebar = ({ setSelectedConversation, messages, socket, online }) => {
+const Sidebar = ({ setSelectedConversation, messages, socket, online,selectedConversation }) => {
   const { user } = useAuth();
   //group
   const [groupChatName, setGroupChatName] = useState('');
@@ -221,7 +221,7 @@ const Sidebar = ({ setSelectedConversation, messages, socket, online }) => {
             <div key={c._id} onClick={() => {
               handleClickConversation(c)
             }}>
-              <BoxConversation con={c} />
+              <BoxConversation con={c} selectedConversation={selectedConversation}/>
             </div>
           ))}
         </div> : <div className='row'>

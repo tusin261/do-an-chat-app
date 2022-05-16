@@ -54,9 +54,17 @@ module.exports.updateAvatar = async (req, res) => {
 }
 
 module.exports.updateInformation = async (req, res) => {
-    const { first_name, last_name, email, new_password } = req.body;
-    console.log(req.body);
-    if (new_password == '') {
+    const { first_name, last_name, email, new_password, old_password } = req.body;
+    try {
+        const existEmail = await user_model.findOne({ email: email }).findOne({ _id: { $ne: req.user.id } });
+        if (existEmail) {
+            return res.status(500).json({ message: "Email đã tồn tại", code: 1 });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi từ server", code: 3 });
+    }
+
+    if (new_password == '' && old_password == '') {
         try {
             const user = await user_model.findOneAndUpdate({ _id: req.user.id }, {
                 $set: {
@@ -75,6 +83,28 @@ module.exports.updateInformation = async (req, res) => {
             return res.status(500).json(error);
         }
     } else {
+        try {
+            const currentUser = await user_model.findOne({_id: req.user.id});
+            if (currentUser.password != old_password) {
+                return res.status(500).json({ message: "Mật khẩu hiện tại không trùng", code: 2 });
+            }
+            const user = await user_model.findOneAndUpdate({ _id: req.user.id }, {
+                $set: {
+                    first_name: first_name,
+                    last_name: last_name,
+                    email: email,
+                    password: new_password
+                }
+            }, { new: true });
+            const accessToken = jwt.sign({
+                id: user._id,
+                isAdmin: user.isAdmin
+            }, process.env.SECRET, { expiresIn: "1d" });
+            const { password, ...rest } = user._doc;
+            return res.status(200).json({ ...rest, accessToken });
+        } catch (error) {
+            return res.status(500).json(error);
+        }
     }
 }
 

@@ -17,7 +17,7 @@ const ModalImage = ({ show, onHide, image }) => {
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <a href={image} target="_blank" className='btn shadow-none'> Tải xuống <DownloadOutlinedIcon /> </a>
+                <a href={image} target="_blank" className='btn shadow-none btn-secondary'> Tải xuống <DownloadOutlinedIcon /> </a>
             </Modal.Footer>
         </Modal>
     )

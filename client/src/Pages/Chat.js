@@ -20,6 +20,8 @@ import { NotificationContext } from '../context/NotificationContext'
 import { ChatContext } from '../context/ChatContext'
 import InfiniteScroll from 'react-infinite-scroll-component';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
 let socket;
 const Chat = () => {
@@ -33,10 +35,11 @@ const Chat = () => {
   const [value, setValue] = useState(1);
   const [newMessage, setNewMessage] = useState();
   const [isSelectedInput, setIsSelectedInput] = useState(false);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [length, setLength] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [online, setOnline] = useState([]);
+  const idConverRef = useRef();
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
   const inputMessageRef = useRef()
@@ -211,26 +214,79 @@ const Chat = () => {
   useEffect(() => {
     if (selectedConversation) {
       socket.emit('join chat', selectedConversation);
-      getMessage();
+      // idConverRef.current = selectedConversation._id;
+      // getMessage();
+      // console.log("selectedConversation", selectedConversation);
+      setPage(1);
+      setHasMore(true);
+      // setMessages([]);
+      getMessageCurrenConversation();
       selectedChatCompare.current = selectedConversation;
-    }
-    return () => {
-      setPage(0);
-      setMessages([]);
     }
   }, [selectedConversation]);
 
-  const getMessage = async () => {
+  const getMessageDiffConver = async (page) => {
+    try {
+      const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${page}`, config);
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const getMessageCurrenConversation = async () => {
+    console.log('do current');
+    const curr = 0;
+    try {
+      const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${curr}`, config);
+      const listMess = data.list;
+      setMessages(listMess);
+      setLength(listMess.length);
+      if (listMess.length === 0 || listMess.length < 10) {
+        console.log('a');
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const getMoreMessage = async () => {
+    console.log(page);
     try {
       const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${page}`, config);
       const listMess = data.list;
       const arr = [...messages, ...listMess];
       setMessages(arr);
+      setPage(page + 1);
+      setLength(arr.length);
+      if (listMess.length === 0 || listMess.length < 10) {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+  const getMessage = async () => {
+    try {
+      const { data } = await axios.get(`/api/messages/${selectedConversation._id}?page=${page}`, config);
+      const listMess = data.list;
+      if (listMess[0].conversation_id._id !== idConverRef.current) {
+        console.log('aaaa');
+        setMessages(listMess);
+        setPage(0);
+      } else {
+        console.log('bbbb');
+        const arr = [...messages, ...listMess];
+        setMessages(arr);
+        setPage(page + 1);
+      }
       if (listMess.length === 0 || listMess.length < 10) {
         setHasMore(false);
       }
       setLength(listMess.total);
-      setPage(page + 1);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -267,7 +323,7 @@ const Chat = () => {
         <div className='col-lg-3 overflow-auto border rounded box-sidebar'>
           <Sidebar setSelectedConversation={setSelectedConversation}
             messages={messages}
-            socket={socket} online={online} />
+            socket={socket} online={online} selectedConversation={selectedConversation} />
         </div>
         <div className='col-lg-9' style={{ height: "90vh" }}>
           {selectedConversation && <InfoConversation
@@ -282,7 +338,7 @@ const Chat = () => {
                 inverse={true}
                 scrollableTarget="scrollableDiv"
                 dataLength={length}
-                next={getMessage}
+                next={getMoreMessage}
                 hasMore={hasMore}>
               </InfiniteScroll>}
             {selectedConversation && messages.map((i, index, currentArr) => (
@@ -299,21 +355,53 @@ const Chat = () => {
           {/* onChange={(e) => setNewMessage(e.target.value)} */}
           {/* onFocus={onFocus} onBlur={onBlur} */}
           {selectedConversation &&
-            <div className='mt-1 d-flex justify-content-between align-items-center'>
-              <input type='text' className="form-control w-65"
-                ref={inputMessageRef}
-                onKeyPress={handleKeyPress}
-                placeholder="Nhập gì đó ...." />
-              <button className='btn btn-primary' onClick={handleSendMessage}><SendOutlinedIcon /></button>
-              <input type='file' id='hinhanh' className='d-none' onChange={sendMessageImage} />
-              <label htmlFor='hinhanh'><ImageOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>
-              <input type='file' id='filekhac' className='d-none' onChange={sendMessageFile} />
-              <label htmlFor='filekhac'><AttachFileOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label>
-              <span data-bs-toggle="dropdown"><MoreHorizOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></span>
-              <div className="dropdown-menu">
-                <input type='file' id='video' className='d-none' onChange={sendMessageVideo} />
-                <span className="dropdown-item" ><label htmlFor='video'><VideoFileOutlinedIcon /> Gui video</label></span>
+            <div className='d-flex justify-content-between align-items-center flex-row'>
+              <div className='col-md-10'>
+                <div className='col-md-12'>
+                  <div className='input-group'>
+                    <input type='text' className="form-control"
+                      ref={inputMessageRef}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Nhập gì đó ...." />
+                    <span className="input-group-btn">
+                      <button className='btn btn-primary' onClick={handleSendMessage}><SendOutlinedIcon /></button>
+                    </span>
+                  </div>
+                </div>
               </div>
+              <div className='col-md-2 d-flex justify-content-around'>
+                <label htmlFor="icon-button-image">
+                  <input accept=".jpg,.png"
+                    id="icon-button-image"
+                    type="file" onChange={sendMessageImage}
+                    className='d-none' />
+                  <IconButton color="primary" aria-label="upload picture" component="span">
+                    <PhotoCamera  />
+                  </IconButton>
+                </label>
+                <label htmlFor="icon-button-file">
+                  <input accept=".pdf, .xls, .xlsx,.zip,.txt,.doc, .docx"
+                    id="icon-button-file"
+                    type="file" onChange={sendMessageFile}
+                    className='d-none' />
+                  <IconButton color="primary" aria-label="upload file" component="span">
+                    <AttachFileOutlinedIcon />
+                  </IconButton>
+                </label>
+                <IconButton color="primary" aria-label="more" component="span" data-bs-toggle="dropdown">
+                  <MoreHorizOutlinedIcon />
+                </IconButton>
+                {/* <input type='file' id='hinhanh' className='d-none' onChange={sendMessageImage} />
+              <label htmlFor='hinhanh'><ImageOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label> */}
+                {/* <input type='file' id='filekhac' className='d-none' onChange={sendMessageFile} />
+              <label htmlFor='filekhac'><AttachFileOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></label> */}
+                {/* <span data-bs-toggle="dropdown"><MoreHorizOutlinedIcon color="primary" sx={{ fontSize: 40 }} /></span> */}
+                <div className="dropdown-menu">
+                  <input type='file' id='video' accept='video/mp4,.mp3' className='d-none' onChange={sendMessageVideo} />
+                  <span className="dropdown-item" ><label htmlFor='video'><VideoFileOutlinedIcon /> Gửi video</label></span>
+                </div>
+              </div>
+
             </div>}
         </div>
       </div> : <Feed socket={socket} />
