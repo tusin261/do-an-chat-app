@@ -2,6 +2,7 @@ const { v4: uuid } = require('uuid');
 const AWS = require('aws-sdk');
 const user_model = require("../models/userModel");
 const jwt = require('jsonwebtoken');
+const CryptoJS = require("crypto-js");
 
 AWS.config.update({
     accessKeyId: process.env.ACCESS_KEY_ID,
@@ -85,15 +86,18 @@ module.exports.updateInformation = async (req, res) => {
     } else {
         try {
             const currentUser = await user_model.findOne({_id: req.user.id});
-            if (currentUser.password != old_password) {
+            const bytes = CryptoJS.AES.decrypt(currentUser.password, process.env.SECRET);
+            const de_password = bytes.toString(CryptoJS.enc.Utf8);
+            if (de_password != old_password) {
                 return res.status(500).json({ message: "Mật khẩu hiện tại không trùng", code: 2 });
             }
+            const en_password = CryptoJS.AES.encrypt(new_password, process.env.SECRET).toString();
             const user = await user_model.findOneAndUpdate({ _id: req.user.id }, {
                 $set: {
                     first_name: first_name,
                     last_name: last_name,
                     email: email,
-                    password: new_password
+                    password: en_password
                 }
             }, { new: true });
             const accessToken = jwt.sign({

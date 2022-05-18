@@ -22,12 +22,6 @@ const SidebarAdmin = () => {
                     </ListItemIcon>
                     <ListItemText primary="Quản lý người dùng" />
                 </ListItemButton>
-                <ListItemButton>
-                    <ListItemIcon color="primary">
-                        <FeedIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Quản lý bài viết" />
-                </ListItemButton>
             </List>
         </div>
     )

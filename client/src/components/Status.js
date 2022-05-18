@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Avatar from '@mui/material/Avatar';
-import { Box, IconButton, Input, TextField, Tooltip } from '@mui/material';
+import { Alert, Box, IconButton, Input, Snackbar, TextField, Tooltip } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
 import MovieIcon from '@mui/icons-material/Movie';
 import axios from 'axios';
 import useAuth from '../context/AuthContext';
-const Status = ({updateList,setPosts}) => {
+const Status = ({ updateList, setPosts }) => {
     const { user } = useAuth();
     const imageRef = useRef();
     const videoRef = useRef();
@@ -14,6 +14,7 @@ const Status = ({updateList,setPosts}) => {
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [preview, setPreview] = useState(null);
     const [isError, setIsError] = useState(false);
+    const [open, setOpen] = useState(false);
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -40,54 +41,67 @@ const Status = ({updateList,setPosts}) => {
             setSelectedVideo(null);
         }
     }
-    
+
 
     const handleSubmit = async () => {
         if (statusRef.current.value == '') {
-            setIsError(true);
             return;
         }
+
         if (!selectedImage && !selectedVideo) {
             //post text
             const json = {
                 desc: statusRef.current.value
             }
-            const { data } = await axios.post("/api/posts",json, config);
+            const { data } = await axios.post("/api/posts", json, config);
             //get all post
             //updateList();
             setDefaultInput();
-            setPosts((preState)=>[data,...preState]);
+            setPosts((preState) => [data, ...preState]);
         } else {
             //post with media
-            if (selectedImage) {
-                const formData = new FormData();
-                formData.append("image", selectedImage);
-                formData.append("desc", statusRef.current.value);
-                const { data } = await axios.post("/api/posts/image",formData, config);
-                //get all post
-                setDefaultInput();
-                setPosts((preState)=>[data,...preState]);
-            }else{
-                const formData = new FormData();
-                formData.append("video", selectedVideo);
-                formData.append("desc", statusRef.current.value);
-                const { data } = await axios.post("/api/posts/video",formData, config);
-                //get all post
-                setDefaultInput();
-                setPosts((preState)=>[data,...preState]);
+            try {
+                if (selectedImage) {
+                    const formData = new FormData();
+                    formData.append("image", selectedImage);
+                    formData.append("desc", statusRef.current.value);
+                    const { data } = await axios.post("/api/posts/image", formData, config);
+                    //get all post
+                    setDefaultInput();
+                    setIsError(false);
+                    setPosts((preState) => [data, ...preState]);
+                } else {
+                    const formData = new FormData();
+                    formData.append("video", selectedVideo);
+                    formData.append("desc", statusRef.current.value);
+                    const { data } = await axios.post("/api/posts/video", formData, config);
+                    //get all post
+                    setDefaultInput();
+                    setIsError(false);
+                    setPosts((preState) => [data, ...preState]);
+                }
+            } catch (error) {
+                setIsError(true);
             }
+
         }
     }
 
-    const setDefaultInput = ()=>{
+    const setDefaultInput = () => {
         setSelectedImage(null);
         setSelectedVideo(null);
         setPreview(null);
         setIsError(false);
         statusRef.current.value = '';
     }
-    
 
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+        setIsError(false);
+    };
     useEffect(() => {
         if (selectedImage) {
             const render = new FileReader();
@@ -122,6 +136,11 @@ const Status = ({updateList,setPosts}) => {
     return (
         <div className='row mb-2'>
             <div className='col-md-12 border rounded'>
+                <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} open={isError} autoHideDuration={1000} onClose={handleClose}>
+                    <Alert severity="error" sx={{ width: '100%' }}>
+                        "Kích thước file không hợp lệ"
+                    </Alert>
+                </Snackbar>
                 <div className='row p-2 align-items-center'>
                     <div className='col-md-1'>
                         <Avatar alt="Remy Sharp" src={user.image_url} />

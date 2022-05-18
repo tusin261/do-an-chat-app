@@ -7,7 +7,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Switch } from '@mui/material';
+import { Alert, Snackbar, Switch } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
@@ -28,6 +28,7 @@ const TableUser = () => {
     const [userByMonth, setUserByMonth] = useState(0);
     const [open, setOpen] = useState(false);
     const [userItem, setUserItem] = useState(null);
+    
     const nameRef = useRef();
     const emailRef = useRef();
 
@@ -80,9 +81,12 @@ const TableUser = () => {
             const userUpdated = users.map(i => i._id == data._id ? { ...i, isVerified: data.isVerified } : i);
             setUsers(userUpdated);
         } catch (error) {
-            console.log(error);
+            console.log(error.response.data.message);
+           
         }
     }
+
+    
 
     const deleteUser = async (u) => {
         const json = {
@@ -113,7 +117,7 @@ const TableUser = () => {
             console.log(error);
         }
     }
-    const handleCloseModal = ()=>{
+    const handleCloseModal = () => {
         setShow(false);
         setUserItem(null);
     }
@@ -131,7 +135,9 @@ const TableUser = () => {
         if (!show) {
             setShow(true);
         }
-    }, [userItem])
+    }, [userItem]);
+
+
     return (
         <div className='p-2'>
             <h4>Xin Chào !!!</h4>
@@ -189,7 +195,7 @@ const TableUser = () => {
                                         {row.last_name}
                                     </TableCell>
                                     <TableCell align="left">{row.first_name}</TableCell>
-                                    <TableCell align="left">{row.gender}</TableCell>
+                                    <TableCell align="left">{row.gender?'Nữ':'Nam'}</TableCell>
                                     <TableCell align="left">{row.email}</TableCell>
                                     <TableCell align="left"><Switch
                                         checked={row.isVerified}

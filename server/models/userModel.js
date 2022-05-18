@@ -25,6 +25,9 @@ const userSchema = mongoose.Schema({
     isVerified:{
         type:Boolean,
         default:false
+    },gender:{
+        type:Boolean,
+        default:false
     },
     image_url:{
         type:String,

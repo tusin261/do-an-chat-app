@@ -78,7 +78,7 @@ const Feed = ({ socket }) => {
                 </p>
               }>
               {posts.map((e, i) => (
-                <Post key={i} post={e} socket={socket} />
+                <Post key={i} post={e} socket={socket} setPosts={setPosts} posts={posts} />
               ))}
 
             </InfiniteScroll>

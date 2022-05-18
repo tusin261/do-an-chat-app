@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
-import { Button, Modal } from 'react-bootstrap'
+import { Button, Modal} from 'react-bootstrap'
 import useAuth from '../context/AuthContext';
+import { Alert, Snackbar} from '@mui/material';
 import axios from 'axios';
 
-const ModalEditUser = ({ show, onHide, userItem,users,setUsers,setShow }) => {
+const ModalEditUser = ({ show, onHide, userItem, users, setUsers, setShow }) => {
     const [lastName, setLastName] = useState(userItem.last_name);
     const [firstName, setFirstName] = useState(userItem.first_name);
     const [email, setEmail] = useState(userItem.email);
     const { user } = useAuth();
+    const [messageError, setMessageError] = useState('');
+    const [isError, setIsError] = useState(false);
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -15,16 +18,22 @@ const ModalEditUser = ({ show, onHide, userItem,users,setUsers,setShow }) => {
             "Authorization": `Bearer ${user.accessToken}`
         },
     };
-
+    const handleCloseMessage = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setIsError(false);
+        setMessageError('');
+    }
     const updateUser = async () => {
         const json = {
             isLock: false,
             isDelete: false,
             isChange: true,
             userId: userItem._id,
-            last_name:lastName,
-            first_name:firstName,
-            email:email
+            last_name: lastName,
+            first_name: firstName,
+            email: email
         }
         try {
             const { data } = await axios.post(`/api/admin/updateUser`, json, config);
@@ -32,12 +41,17 @@ const ModalEditUser = ({ show, onHide, userItem,users,setUsers,setShow }) => {
             userUpdated.push(data);
             setUsers(userUpdated);
             setShow(false);
+            setIsError(false);
+
         } catch (error) {
-            console.log(error);
+            console.log(error.response.data.message);
+            setIsError(true);
+            setMessageError(error.response.data.message);
         }
     }
 
     return (
+
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
                 <Modal.Title id="contained-modal-title-vcenter">
@@ -46,6 +60,11 @@ const ModalEditUser = ({ show, onHide, userItem,users,setUsers,setShow }) => {
             </Modal.Header>
             <Modal.Body>
                 <div className='container'>
+                    <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} open={isError} autoHideDuration={2000} onClose={handleCloseMessage}>
+                        <Alert onClose={handleCloseMessage} severity="error" sx={{ width: '100%' }}>
+                            {messageError}
+                        </Alert>
+                    </Snackbar>
                     <div className='row'>
                         <div className='col-md-10'>
                             <h5>Họ</h5>

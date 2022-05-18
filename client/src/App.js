@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import LoginForm from './Pages/loginForm';
-import SignUpForm from './Pages/signUpForm';
+import Login from './Pages/Login';
+import SignUp from './Pages/SignUp';
 import Admin from './Pages/Admin';
 import ProtectedRoute from './ProtectedRouter';
 import Chat from './Pages/Chat'
@@ -17,8 +17,8 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<LoginForm />}></Route>
-      <Route path="/register" element={<SignUpForm />}></Route>
+      <Route path="/" element={<Login />}></Route>
+      <Route path="/register" element={<SignUp />}></Route>
       <Route path="/handle-redirect" element={<HandleRedirect />}></Route>
       <Route
         path="/chat"

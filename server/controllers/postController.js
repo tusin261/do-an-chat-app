@@ -73,7 +73,7 @@ module.exports.postWithImage = async (req, res) => {
         }
         s3.upload(params, async (err, data) => {
             if (err) {
-                res.status(500).json(error);
+                res.status(500).json({message:"Vui lòng thử lại sau"});
             } else {
                 const newPost = {
                     userId: req.user.id,
@@ -86,7 +86,7 @@ module.exports.postWithImage = async (req, res) => {
                     const postRes = await Post.findOne({ _id: post._id }).populate('userId');
                     return res.status(200).json(postRes);
                 } catch (error) {
-                    res.status(500).json(error);
+                    res.status(500).json({message:"Kích cỡ file phải ít hơn 2MB"});
                 }
             }
         })

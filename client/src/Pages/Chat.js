@@ -180,6 +180,7 @@ const Chat = () => {
 
     socket.on('notification new group', data => {
       console.log('assss');
+      console.log(data);
       setNewMessage(data);
     })
 
@@ -200,7 +201,13 @@ const Chat = () => {
         setMessages((pre) => [newMess, ...pre]);
       }
     });
-  }, [])
+    socket.on('new message mem out group', (data) => {
+      setSelectedConversation(null);
+      setNewMessage(data);
+    });
+  }, []);
+
+
 
   useEffect(() => {
     if (socket) {
@@ -362,7 +369,7 @@ const Chat = () => {
                     <input type='text' className="form-control"
                       ref={inputMessageRef}
                       onKeyPress={handleKeyPress}
-                      placeholder="Nhập gì đó ...." />
+                      placeholder="Nhập gì đó ...." maxLength="200" />
                     <span className="input-group-btn">
                       <button className='btn btn-primary' onClick={handleSendMessage}><SendOutlinedIcon /></button>
                     </span>
@@ -376,7 +383,7 @@ const Chat = () => {
                     type="file" onChange={sendMessageImage}
                     className='d-none' />
                   <IconButton color="primary" aria-label="upload picture" component="span">
-                    <PhotoCamera  />
+                    <PhotoCamera />
                   </IconButton>
                 </label>
                 <label htmlFor="icon-button-file">

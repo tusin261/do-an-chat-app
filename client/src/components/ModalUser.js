@@ -112,7 +112,7 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
                                     <p>Giới tính: </p>
                                 </div>
                                 <div className='col-md-8 ps-1'>
-                                    <p>{friend.email}</p>
+                                    <p>{friend.gender?'Nữ':'Nam'}</p>
                                 </div>
                             </div>
                         </div>

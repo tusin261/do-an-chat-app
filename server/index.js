@@ -95,7 +95,6 @@ io.on('connection', (socket) => {
     })
 
     socket.on('send notification delete member',({data,member})=>{
-        
         if(data.conversation_id.isGroupChat){
             const listReceive = data.conversation_id.member;
             const newListReceiveOnline = users.filter(o1 => listReceive.some(o2 => o1.userId === o2._id));
@@ -103,7 +102,10 @@ io.on('connection', (socket) => {
             for(let i=0;i<newListReceiveOnlineNoSender.length;i++){
                 socket.to(newListReceiveOnlineNoSender[i].socketId).emit("new message group",data);
             }
-            socket.to(getUser(member._id).socketId).emit("new message group",data);
+            const isOnline = users.find((e)=>e.userId == member._id);
+            if(isOnline){
+                socket.to(getUser(member._id).socketId).emit("new message mem out group",data);
+            }
         }
     })
 

@@ -14,10 +14,10 @@ import useAuth from '../context/AuthContext';
 import { formatDate, formatDateTime, getTime } from '../services/Format/FormatDateAndTime'
 import * as API from '../constants/ManageURL'
 
-const Post = ({ post, socket }) => {
+const Post = ({ post, socket, setPosts, posts }) => {
     const { user } = useAuth();
     const [isLiked, setIsLiked] = useState(false);
-    const [like, setLike] = useState(post.likes.length);
+    const [like, setLike] = useState(0);
 
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
@@ -29,6 +29,8 @@ const Post = ({ post, socket }) => {
 
     useEffect(() => {
         setIsLiked(post.likes.some(e => e._id == user._id));
+        //post.likes.push(user._id);
+
     }, [post.likes])
 
     // useEffect(() => {
@@ -45,14 +47,26 @@ const Post = ({ post, socket }) => {
             const { data } = await axios.put("/api/posts/" + post._id + "/like", json, config);
             userId = data.userId;
             postId = data._id;
-            if(!isLiked){
+            if (!isLiked) {
                 createNewNotificationLike(userId, postId);
+                const newLike = [...post.likes, user]
+                const oldPosts = [...posts];
+                const objIndex = posts.findIndex((obj => obj._id == post._id));
+                oldPosts[objIndex].likes = newLike;
+                setPosts(oldPosts)
+            }
+            else {
+                const newLike = post.likes.filter(e => e._id != user._id);
+                const oldPosts = [...posts];
+                const objIndex = posts.findIndex((obj => obj._id == post._id));
+                oldPosts[objIndex].likes = newLike;
+                setPosts(oldPosts)
             }
             console.log(data);
         } catch (error) {
             console.log(error);
         }
-        setLike(isLiked ? like - 1 : like + 1);
+        setLike(isLiked ? post.likes.length - 1 : post.likes.length + 1);
         setIsLiked(!isLiked);
     }
 
@@ -105,7 +119,7 @@ const Post = ({ post, socket }) => {
                 <CardActions sx={{ px: 0 }}>
                     <FavoriteIcon onClick={handleLike} sx={{ mr: 2, color: isLiked ? '#FD5D5D' : '#808080' }} />
                     <Typography variant="body2" color="text.secondary">
-                        {like} lượt thích
+                        {post.likes.length} lượt thích
                     </Typography>
                     {(like > 10) && <Typography component="div">
                         <b>{post.likes[0].first_name},{post.likes[1].first_name} </b>

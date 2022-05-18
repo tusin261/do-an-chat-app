@@ -1,3 +1,6 @@
+body, html { 
+    font-family: 'Open Sans', sans-serif;
+}
 .box-chat {
     width: 100%;
     height: 460px;
@@ -120,3 +123,36 @@
     line-height: 0px;
     margin: 0px 8px;
 }
+
+.bg-login{
+    background-color: #dce2f5;
+}
+.bg-form{
+    background-color: #ffffff;
+    border-radius: 10px;
+    height: 380px;
+}
+.bg-form-signup{
+    background-color: #ffffff;
+    border-radius: 10px;
+    height: auto;
+}
+.title-login{
+    color: #565c6e;
+}
+.btn-login{
+    padding: 15px;
+    border-radius:6px;
+    border: none;
+    background-color: #626981;
+}
+.btn-signUp{
+    padding: 10px;
+    border-radius:3px;
+    border: none;
+    background-color: #626981;
+}
+.striped {
+    background: linear-gradient(to bottom left, rgb(160, 188, 194) 50%, rgb(218, 229, 208) 50%);
+    height: 100%;
+ }

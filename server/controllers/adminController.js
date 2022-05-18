@@ -66,6 +66,10 @@ module.exports.updateUser = async (req,res)=>{
             const user = await user_model.findOneAndDelete({_id:userId});
             return res.status(200).json(user);
         }else if(isChange){
+            const existEmail = await user_model.findOne({ email: email }).findOne({ _id: { $ne: req.user.id } });
+            if (existEmail) {
+                return res.status(500).json({ message: "Email đã tồn tại", code: 1 });
+            }
             const user = await user_model.findOneAndUpdate({_id:userId},{
                 $set:{
                     first_name:first_name,
@@ -76,6 +80,6 @@ module.exports.updateUser = async (req,res)=>{
             return res.status(200).json(user);
         }
     } catch (error) {
-        return res.status(500).json(error);
+        return res.status(500).json({ message: "Vui lòng thử lại sau", code: 0 });
     }
 }

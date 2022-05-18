@@ -66,12 +66,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                         setSelectedConversation={setSelectedConversation} 
                         listImage={listImage} 
                         listFile={listFile} socket={socket} setMessages={setMessages} messages={messages} />}
-                    {showVideoCall && <ModalVideoChat showVideoCall={showVideoCall} 
-                                                onHide={() => setShowVideoCall(false)}
-                                                socket={socket} isCaller={isCaller} 
-                                                receiverCall={receiverCall} 
-                                                signalOfCaller={signalOfCaller} 
-                                                caller={caller} selectedConversation={selectedConversation}/>}
+                    
                 </div>
             </div>
         </div>
