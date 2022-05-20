@@ -55,6 +55,29 @@ function formatDateTime(t) {
     }
 }
 
+function formatDateTimeMessage(t) {
+    let dt = new Date(t);
+    const date = dt.getDate();
+    const month = months[dt.getMonth()];
+    const diffDays = new Date().getDate() - date;
+    const diffMonths = new Date().getMonth() - dt.getMonth();
+    const diffYears = new Date().getFullYear() - dt.getFullYear();
+    if (diffYears === 0 && diffDays === 0 && diffMonths === 0) {
+        return getTime(t);
+    } else if (diffDays === -1) {
+        return getTime(t);
+    } else if (diffYears === 0 && diffDays === 1) {
+        return `Hôm qua, ${getTime(t)}`;
+    } else if (diffYears === 0 && (diffDays > 1 && diffDays < 7)) {
+        return `${fulldays[dt.getDay()]},  ${getTime(t)}`;
+    } else if (diffYears >= 1) {
+        return dt.getDate() + '-' + (dt.getMonth() + 1) + '-' + dt.getFullYear();
+    } else {
+        return date + " " + month;
+    }
+}
+
+
 function getTime(myDate) {
     const time = new Date(myDate.toString()).toLocaleTimeString('en-US', {
         timeStyle: 'short',
@@ -67,4 +90,4 @@ function getTime(myDate) {
 
 
 
-module.exports = { formatAMPM, formatDate, formatDateTime, getTime };
+module.exports = { formatAMPM, formatDate, formatDateTime, getTime,formatDateTimeMessage };

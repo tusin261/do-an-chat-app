@@ -7,11 +7,14 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import CheckIcon from '@mui/icons-material/Check';
 import * as API from '../constants/ManageURL'
-
-const ModalUser = ({ show, onHide, friend,socket }) => {
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+const ModalUser = ({ show, onHide, friend, socket }) => {
     const { user, dispatch } = useAuth();
     const [listFriend, setListFriend] = useState();
     const [status, setStatus] = useState();
+    const [successAdd, setSuccessAdd] = useState(false);
+    const [errorAdd, setErrorAdd] = useState(false);
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
         headers: {
@@ -23,11 +26,11 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
         getListFriend();
     }, [])
 
-    useEffect(()=>{
-        if(listFriend){
+    useEffect(() => {
+        if (listFriend) {
             checkFriend();
         }
-    },[listFriend,friend]);
+    }, [listFriend, friend]);
 
     const getListFriend = async () => {
         try {
@@ -43,13 +46,13 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
         const friends = listFriend.listFriend;
         const request = listFriend.request;
         const id = String(friend._id);
-        if (sent_request.find((e)=>e._id == id)) {
+        if (sent_request.find((e) => e._id == id)) {
             setStatus(1); // da gui kb
-        } else if (friends.find((e)=>e._id == id)) {
+        } else if (friends.find((e) => e._id == id)) {
             setStatus(2);//ban be
-        } else if (request.find((e)=>e._id == id)){
+        } else if (request.find((e) => e._id == id)) {
             setStatus(3);//dang doi xac nhan
-        }else{
+        } else {
             setStatus(4);
         }
     }
@@ -63,8 +66,10 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
             //updateUser(data);
             createNewNotificationAddFriend(item._id);
             setStatus(1);
+            setSuccessAdd(true);
             //thong bao
         } catch (error) {
+            setErrorAdd(true);
             console.log(error);
         }
     }
@@ -80,6 +85,15 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
             console.log(error);
         }
     }
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSuccessAdd(false);
+        setErrorAdd(false);
+    };
+
     return (
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
@@ -89,6 +103,16 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
             </Modal.Header>
             <Modal.Body>
                 <div className='container-fluid'>
+                    <Snackbar open={successAdd} autoHideDuration={6000} onClose={handleClose}>
+                        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                            Gửi lời mới kết bạn thành công
+                        </Alert>
+                    </Snackbar>
+                    <Snackbar open={errorAdd} autoHideDuration={6000} onClose={handleClose}>
+                        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                            Gửi lời mời kết bạn thất bại
+                        </Alert>
+                    </Snackbar>
                     <div className='row'>
                         <div className='col-md-12 d-flex justify-content-center'>
                             <Avatar sx={{ width: 64, height: 64 }} alt="avata" src={friend.image_url} />
@@ -112,7 +136,7 @@ const ModalUser = ({ show, onHide, friend,socket }) => {
                                     <p>Giới tính: </p>
                                 </div>
                                 <div className='col-md-8 ps-1'>
-                                    <p>{friend.gender?'Nữ':'Nam'}</p>
+                                    <p>{friend.gender ? 'Nữ' : 'Nam'}</p>
                                 </div>
                             </div>
                         </div>

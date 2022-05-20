@@ -6,7 +6,7 @@ import { Tooltip } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import useAuth from '../context/AuthContext'
-import { formatDate,formatDateTime,getTime } from '../services/Format/FormatDateAndTime'
+import { formatDate,formatDateTime,getTime,formatDateTimeMessage } from '../services/Format/FormatDateAndTime'
 
 const Message = ({ message, own, isLastMessage }) => {
     const [show, setShow] = useState(false);
@@ -53,7 +53,7 @@ const Message = ({ message, own, isLastMessage }) => {
                             <Avatar sx={{ width: 32, height: 32 }} alt="avata" src={message.sender_id.image_url} />
                         </div>}
                         {own ?
-                            <Tooltip title={formatDateTime(message.createdAt)} placement="left">
+                            <Tooltip title={formatDateTimeMessage(message.createdAt)} placement="left">
                                 <div className='ms-2 p-2'>
                                     {/* <h6 className='mb-0 p-1 text-end small'>{formatDate(message.createdAt)}</h6> */}
                                     {message.type == 'text' && <p className='mb-0 bg-primary p-1 rounded text-white text-center'>{message.content}</p>}
@@ -83,7 +83,7 @@ const Message = ({ message, own, isLastMessage }) => {
                                     </h6>}
                                     {/* {lastMessage && <h6 className='mb-0 p-1 text-end small'>Da xem</h6>} */}
                                 </div></Tooltip> :
-                            <Tooltip title={formatDateTime(message.createdAt)} placement="right">
+                            <Tooltip title={formatDateTimeMessage(message.createdAt)} placement="right">
                                 <div className='ms-2'>
                                     <h6 className='mb-0 p-1 text-start small'>{message.sender_id.first_name}</h6>
                                     {message.type == 'text' && <p className='mb-0 bg-light p-1 rounded text-dark text-center'>{message.content}</p>}

@@ -14,11 +14,12 @@ import ListFile from './ListFile';
 import { ChatContext } from '../context/ChatContext'
 import Avatar from '@mui/material/Avatar';
 import * as API from '../constants/ManageURL'
-
+import LogoutIcon from '@mui/icons-material/Logout';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 const ModalDetailConversation = ({ showDetailConversation,
     onHide,
     selectedConversation,
-    setSelectedConversation, socket, listImage, listFile,setMessages,messages }) => {
+    setSelectedConversation, socket, listImage, listFile, setMessages, messages }) => {
     const inputSearch = useRef();
     const imageInput = useRef();
     const [preview, setPreview] = useState();
@@ -30,7 +31,14 @@ const ModalDetailConversation = ({ showDetailConversation,
     const [error, setError] = useState(false);
     const [open, setOpen] = useState(false);
     const [successAddMember, setSuccessAddMember] = useState(false);
+    const [successKickMember, setSuccessKickMember] = useState(false);
+    const [successChangeImage, setSuccessChangeImage] = useState(false);
+    const [successChangeName, setSuccessChangeName] = useState(false);
     const [errorAddMember, setErrorAddMember] = useState(false);
+    const [errorKickMember, setErrorKickMember] = useState(false);
+    const [errorChangeImage, setErrorChangeImage] = useState(false);
+    const [errorChangeName, setErrorChangeName] = useState(false);
+
     const [loading, setLoading] = useState(false);
     const { conversationState, conversationDispatch } = useContext(ChatContext);
 
@@ -71,12 +79,14 @@ const ModalDetailConversation = ({ showDetailConversation,
                 const { data } = await axios.put("/api/chats/update-group", formData, config);
                 setSelectedConversation(data);
                 setSelectedImage(null);
+                setSuccessChangeImage(true);
             } catch (error) {
                 console.log(error);
+                setErrorChangeImage(true);
             }
         }
     }
-    
+
     const handleChangeName = async () => {
         if (groupChatName === selectedConversation.chat_name) {
             //set thong bao loi
@@ -89,7 +99,9 @@ const ModalDetailConversation = ({ showDetailConversation,
             try {
                 const { data } = await axios.put("/api/chats/rename-group", jsonData, config);
                 setSelectedConversation(data);
+                setSuccessChangeName(true);
             } catch (error) {
+                setErrorChangeName(true);
                 console.log(error);
             }
         }
@@ -103,9 +115,11 @@ const ModalDetailConversation = ({ showDetailConversation,
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
             const action = 'đã bị xóa khỏi nhóm';
             console.log('xoa tanh vien');
-            sendMessageNotificationDeleteMember(action,mem);       
+            sendMessageNotificationDeleteMember(action, mem);
             setSelectedConversation(data);
+            setSuccessKickMember(true);
         } catch (error) {
+            setErrorKickMember(true);
             console.log(error);
         }
     }
@@ -136,52 +150,56 @@ const ModalDetailConversation = ({ showDetailConversation,
     }
 
     const handleAddMember = async () => {
-        const jsonData = {
-            conversationId: selectedConversation._id,
-            member: JSON.stringify(listMember.map((u) => u._id))
-        }
-        try {
-            const { data } = await axios.put("/api/chats/add-group", jsonData, config);
-            const action = 'đã được thêm vào nhóm';
-            sendMessageNotification(action);           
-            setSelectedConversation(data);
-            setListResult([]);
-            setListMember([]);
-            setSuccessAddMember(true);
-        } catch (error) {
-            console.log(error);
+        if (listMember.length > 0) {
+            const jsonData = {
+                conversationId: selectedConversation._id,
+                member: JSON.stringify(listMember.map((u) => u._id))
+            }
+            try {
+                const { data } = await axios.put("/api/chats/add-group", jsonData, config);
+                const action = 'đã được thêm vào nhóm';
+                sendMessageNotification(action);
+                setSelectedConversation(data);
+                setListResult([]);
+                setListMember([]);
+                setSuccessAddMember(true);
+            } catch (error) {
+                console.log(error);
+                setErrorAddMember(true);
+            }
+        }else{
             setErrorAddMember(true);
         }
     }
 
     const sendMessageNotification = async (action) => {
-        const listMemberName = listMember.map((u)=>u.first_name);
+        const listMemberName = listMember.map((u) => u.first_name);
         try {
-          const { data } = await axios.post("/api/messages/notification", {
-            content: `${listMemberName.toString()} ${action}`,
-            conversation_id: selectedConversation._id,
-            type: 'notification'
-          }, config);
-          socket.emit('send notification', data);
-          setMessages([...messages, data]);
+            const { data } = await axios.post("/api/messages/notification", {
+                content: `${listMemberName.toString()} ${action}`,
+                conversation_id: selectedConversation._id,
+                type: 'notification'
+            }, config);
+            socket.emit('send notification', data);
+            setMessages([...messages, data]);
         } catch (error) {
-          console.log(error);
+            console.log(error);
         }
     }
 
-    const sendMessageNotificationDeleteMember = async (action,member) => {
+    const sendMessageNotificationDeleteMember = async (action, member) => {
         try {
-          const { data } = await axios.post("/api/messages/notification", {
-            content: `${member.first_name} ${action}`,
-            conversation_id: selectedConversation._id,
-            type: 'notification'
-          }, config);
-          socket.emit('send notification delete member', {data,member});
-          setMessages([...messages, data]);
+            const { data } = await axios.post("/api/messages/notification", {
+                content: `${member.first_name} ${action}`,
+                conversation_id: selectedConversation._id,
+                type: 'notification'
+            }, config);
+            socket.emit('send notification delete member', { data, member });
+            setMessages([...messages, data]);
         } catch (error) {
-          console.log(error);
+            console.log(error);
         }
-      }
+    }
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -191,6 +209,12 @@ const ModalDetailConversation = ({ showDetailConversation,
         setError(false);
         setSuccessAddMember(false);
         setErrorAddMember(false);
+        setSuccessKickMember(false);
+        setErrorKickMember(false);
+        setSuccessChangeImage(false);
+        setErrorChangeImage(false);
+        setErrorChangeName(false);
+        setSuccessChangeName(false);
     };
     const openAlert = () => {
         setOpen(true);
@@ -203,7 +227,7 @@ const ModalDetailConversation = ({ showDetailConversation,
         try {
             const { data } = await axios.put("/api/chats/remove-group", jsonData, config);
             const action = 'đã rời khỏi nhóm';
-            sendMessageNotificationOutGroup(action,user);
+            sendMessageNotificationOutGroup(action, user);
             setSelectedConversation(null);
             getList();
         } catch (error) {
@@ -211,18 +235,18 @@ const ModalDetailConversation = ({ showDetailConversation,
         }
     }
 
-    const sendMessageNotificationOutGroup = async (action,member) => {
+    const sendMessageNotificationOutGroup = async (action, member) => {
         try {
-          const { data } = await axios.post("/api/messages/notification", {
-            content: `${member.first_name} ${action}`,
-            conversation_id: selectedConversation._id,
-            type: 'notification'
-          }, config);
-          socket.emit('send notification out group', {data,member});
+            const { data } = await axios.post("/api/messages/notification", {
+                content: `${member.first_name} ${action}`,
+                conversation_id: selectedConversation._id,
+                type: 'notification'
+            }, config);
+            socket.emit('send notification out group', { data, member });
         } catch (error) {
-          console.log(error);
+            console.log(error);
         }
-      }
+    }
 
     const getList = async () => {
         conversationDispatch({ type: "GET_CHATS_START" });
@@ -251,7 +275,6 @@ const ModalDetailConversation = ({ showDetailConversation,
 
     return (
         <Modal show={showDetailConversation} onHide={onHide}>
-
             <div className="modal-header">
                 <h5>Thông tin cuộc trò chuyện</h5>
                 <button type="button" className="btn-close" onClick={onHide}></button>
@@ -261,14 +284,13 @@ const ModalDetailConversation = ({ showDetailConversation,
                     <div className='row justify-content-center'>
                         <div className='col-lg-10 d-flex flex-column align-items-center'>
                             <Avatar sx={{ width: 64, height: 64 }} alt="avata" src={preview ? preview : getImageForTypeChat(selectedConversation)} />
-
                             {/* <img width="64" height="64" className='rounded-circle' alt="100x100" src={preview ? preview : getImageForTypeChat(selectedConversation)} /> */}
                             {selectedConversation.isGroupChat && <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />}
                             {selectedConversation.isGroupChat && <div className='d-flex mt-2'>
                                 <button className='btn btn-primary me-2' onClick={chooseImage}>Chọn ảnh nhóm</button>
                                 {selectedImage && <button className='btn btn-primary' onClick={submitImageGroup}>Đổi ảnh nhóm</button>}
                             </div>}
-                            {selectedConversation.isGroupChat && <p className='mb-0'>Nhóm được tạo bởi {selectedConversation.creator.first_name}</p>}
+                            {selectedConversation.isGroupChat && <p className='mb-0'>Nhóm được tạo bởi <b>{selectedConversation.creator.first_name}</b></p>}
                         </div>
                     </div>
                     {selectedConversation.isGroupChat && <>
@@ -299,8 +321,8 @@ const ModalDetailConversation = ({ showDetailConversation,
                                                     <p className='mb-0'>{item.email}</p>
                                                 </div>
                                                 <div className='col-lg-3'>
-                                                    {(selectedConversation.isGroupChat && selectedConversation.creator._id === user._id)
-                                                        && <button className='btn btn-danger' onClick={() => handleDeleteMember(item)}>Xóa</button>}
+                                                    {(selectedConversation.isGroupChat && selectedConversation.creator._id === user._id && item._id != selectedConversation.creator._id)
+                                                        && <button className='btn btn-danger' onClick={() => handleDeleteMember(item)}>Xóa <RemoveCircleOutlineIcon /></button>}
                                                 </div>
                                             </div>
                                         </div>
@@ -342,33 +364,63 @@ const ModalDetailConversation = ({ showDetailConversation,
                                 ))}
                             </ul>
                             <button className='btn btn-primary' onClick={handleAddMember}>Thêm thành viên</button>
-                        </div>{error && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={error} autoHideDuration={2000} onClose={handleClose}>
+                        </div><Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={error} autoHideDuration={2000} onClose={handleClose}>
                             <Alert severity="error" sx={{ width: '100%' }}>
                                 Thành viên đã tồn tại
                             </Alert>
-                        </Snackbar>}
-                        {successAddMember && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={successAddMember} autoHideDuration={2000} onClose={handleClose}>
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={successAddMember} autoHideDuration={2000} onClose={handleClose}>
                             <Alert severity="success" sx={{ width: '100%' }}>
                                 Thêm thành viên thành công !!!
                             </Alert>
-                        </Snackbar>}
-                        {errorAddMember && <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errorAddMember} autoHideDuration={2000} onClose={handleClose}>
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errorAddMember} autoHideDuration={2000} onClose={handleClose}>
                             <Alert severity="error" sx={{ width: '100%' }}>
                                 Thêm thành viên không thành công !!!
                             </Alert>
-                        </Snackbar>}
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={successKickMember} autoHideDuration={2000} onClose={handleClose}>
+                            <Alert severity="success" sx={{ width: '100%' }}>
+                                Xóa thành viên thành công
+                            </Alert>
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errorKickMember} autoHideDuration={2000} onClose={handleClose}>
+                            <Alert severity="error" sx={{ width: '100%' }}>
+                                Xóa thành viên không thành công
+                            </Alert>
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={successChangeImage} autoHideDuration={2000} onClose={handleClose}>
+                            <Alert severity="success" sx={{ width: '100%' }}>
+                                Đổi ảnh nhóm thành công
+                            </Alert>
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errorChangeImage} autoHideDuration={2000} onClose={handleClose}>
+                            <Alert severity="error" sx={{ width: '100%' }}>
+                                Đổi ảnh nhóm không thành công
+                            </Alert>
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={successChangeName} autoHideDuration={2000} onClose={handleClose}>
+                            <Alert severity="success" sx={{ width: '100%' }}>
+                                Đổi tên nhóm thành công
+                            </Alert>
+                        </Snackbar>
+                        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errorChangeName} autoHideDuration={2000} onClose={handleClose}>
+                            <Alert severity="success" sx={{ width: '100%' }}>
+                                Đổi tên nhóm thất bại
+                            </Alert>
+                        </Snackbar>
                     </>}
 
                     <div className='row'>
-                        <p className='mb-0'>Ảnh đã chia sẻ</p>
+                        <h5 className='mb-0'>Ảnh đã chia sẻ</h5>
                         <ListImage listImage={listImage} />
                     </div>
                     <div className='row'>
-                        <p className='mb-0'>File</p>
+                        <h5 className='mb-0'>File</h5>
                         <ListFile listFile={listFile} />
                     </div>
                     <div className='row'>
-                        {selectedConversation.isGroupChat && <button className='btn btn-danger' data-bs-dismiss="modal" onClick={openAlert}>Rời khỏi nhóm</button>}
+                        {selectedConversation.isGroupChat && <button className='btn btn-danger' data-bs-dismiss="modal" onClick={openAlert}>Rời khỏi nhóm <LogoutIcon /></button>}
                         <Dialog
                             open={open}
                             onClose={handleClose}

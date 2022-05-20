@@ -54,6 +54,7 @@ const Chat = () => {
   //   setIsSelectedInput(true);
   // }
   const sendMessage = async () => {
+    if(inputMessageRef.current.value.trim() != '')
     try {
       const { data } = await axios.post("/api/messages", {
         content: inputMessageRef.current.value,
@@ -130,7 +131,7 @@ const Chat = () => {
     }
   }
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && inputMessageRef.current.value !== '') {
+    if (e.key === 'Enter' && inputMessageRef.current.value.trim() !== '') {
       sendMessage();
     }
   }

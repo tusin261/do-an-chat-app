@@ -9,32 +9,13 @@ import {NotificationContext} from '../context/NotificationContext'
 import ModalDetailConversation from './ModalDetailConversation';
 import ModalVideoChat from './ModalVideoChat';
 import Avatar from '@mui/material/Avatar';
-
+import PeopleIcon from '@mui/icons-material/People';
 const InfoConversation = ({ selectedConversation, setSelectedConversation,socket,
     listImage,listFile,setMessages,messages }) => {
     const { user } = useAuth();
     // !selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name    
     const [loading, setLoading] = useState(false);
     const [showDetailConversation, setShowDetailConversation] = useState(false);
-    //video call
-    const [showVideoCall,setShowVideoCall] = useState(false)
-    const [isCaller,setIsCaller] = useState(false);
-    const [receiverCall,setReceiverCall] = useState();
-
-    //ng nhan
-    const [signalOfCaller,setSignalOfCaller] = useState();
-    const [caller,setCaller] = useState();
-
-    const acceptCall = ()=>{
-        setShowVideoCall(true); 
-        setIsCaller(false);
-    }
-
-    const callVideo = ()=>{
-        setShowVideoCall(true); 
-        setReceiverCall(selectedConversation.member.find(i=> i._id != user._id));
-        setIsCaller(true);
-    }
     const showDetailModal = ()=>{
         setShowDetailConversation(true);
     }
@@ -54,7 +35,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
                     {/* <img width="42" height="42" className='rounded-circle' alt="100x100" src={selectedConversation.isGroupChat?selectedConversation.group_image:getImageConversation(user,selectedConversation)} /> */}
                     <div className='ms-2'>
                         <h5 className='mb-0'>{!selectedConversation.isGroupChat ? getNameConversation(user, selectedConversation) : selectedConversation.chat_name}</h5>
-                        <span><FiberManualRecordIcon style={{ fontSize: 16, color: "#B6FFCE" }} /></span>
+                        {selectedConversation.isGroupChat &&<span>{selectedConversation.member.length} Thành viên</span>}
                     </div>
                 </div>
                 <div className='d-flex align-items-center'>

@@ -21,8 +21,9 @@ const Notification = ({ socket,setValue,value,setNewNotifi }) => {
         notificationDispatch({ type: 'GET_NOTIFICATION' });
         try {
             const { data } = await axios.get(API.GET_NOTI, config);
+            const listNotUserId = data.filter((e)=>e.sender_id._id != user._id);
             console.log(data);
-            notificationDispatch({ type: 'GET_NOTIFICATION_SUCCESS', payload: data });
+            notificationDispatch({ type: 'GET_NOTIFICATION_SUCCESS', payload: listNotUserId });
         } catch (error) {
             notificationDispatch({ type: 'GET_NOTIFICATION_FAIL' });
             console.log(error);

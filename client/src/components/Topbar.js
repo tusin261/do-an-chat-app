@@ -11,14 +11,15 @@ import Notification from './Notification';
 import HomeIcon from '@mui/icons-material/Home';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import PhoneIcon from '@mui/icons-material/Phone';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import PersonPinIcon from '@mui/icons-material/PersonPin';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import { useNavigate } from 'react-router-dom';
-
+import LogoutIcon from '@mui/icons-material/Logout';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LockResetIcon from '@mui/icons-material/LockReset';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import SaveIcon from '@mui/icons-material/Save';
 const Topbar = ({ socket, setValue, value }) => {
   const { user, dispatch } = useAuth();
   const imageURL = BaseURL.PUBLIC_FOLDER_IMAGE;
@@ -301,8 +302,8 @@ return (
               <div className='col-md-1'>
                 <Avatar id="imageDropdown" data-bs-toggle="dropdown" sx={{ width: 32, height: 32 }} src={user.image_url} />
                 <div className="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                  <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">Thông tin cá nhân</a>
-                  <a className="dropdown-item" href="/" onClick={logout}>Đăng xuất</a>
+                  <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal"><AccountCircleIcon /> Thông tin cá nhân</a>
+                  <a className="dropdown-item" href="/" onClick={logout}><LogoutIcon /> Đăng xuất</a>
                 </div>
                 <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                   <div className="modal-dialog">
@@ -315,7 +316,7 @@ return (
                           width="64" height="64"
                           className='mb-2 rounded-circle' alt="100x100" />
                         <input type="file" accept='image/*' ref={imageInput} style={{ display: 'none' }} onChange={handleImageChange} />
-                        <button className='btn btn-primary' onClick={handleClick}>Đổi ảnh đại diện</button>
+                        <button className='btn btn-primary' onClick={handleClick}>Đổi ảnh đại diện <CameraAltIcon/></button>
                         <div className='container'>
                           <div className='row'>
                             <div className='col-md-12'>
@@ -348,7 +349,7 @@ return (
                                 <input type="text" className="form-control" value={user.gender ? 'Nữ' : 'Nam'} disabled={true} />
                               </div>
                               <Divider />
-                              <button className='btn btn-primary mt-2' onClick={openPassword}>Đổi mật khẩu</button>
+                              <button className='btn btn-warning my-2' onClick={openPassword}>Đổi mật khẩu <LockResetIcon /></button>
                               {openChangePassword && <><div className="mb-3">
                                 <label className="form-label">Mật khẩu hiện tại</label>
                                 <input type="password" className="form-control" placeholder='Nhập mật khẩu hiện tại'
@@ -367,7 +368,7 @@ return (
                                   <span hidden={validConfirmPassword} className="my-2 text-danger text-start">Không trùng với mật khẩu</span>
                                 </div> </>}
                               <Divider />
-                              <button type="submit" className="btn btn-primary mt-2" data-bs-dismiss="modal" onClick={handleSubmit}>Lưu thay đổi</button>
+                              <button type="submit" className="btn btn-primary mt-2" data-bs-dismiss="modal" onClick={handleSubmit}>Lưu thay đổi <SaveIcon /></button>
                             </div>
                           </div>
                         </div>

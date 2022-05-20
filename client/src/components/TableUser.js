@@ -28,7 +28,8 @@ const TableUser = () => {
     const [userByMonth, setUserByMonth] = useState(0);
     const [open, setOpen] = useState(false);
     const [userItem, setUserItem] = useState(null);
-    
+    const [successDelete,setSuccessDelete] = useState(false);
+    const [errorDelete,setErrorDelete] = useState(false);
     const nameRef = useRef();
     const emailRef = useRef();
 
@@ -82,11 +83,11 @@ const TableUser = () => {
             setUsers(userUpdated);
         } catch (error) {
             console.log(error.response.data.message);
-           
+
         }
     }
 
-    
+
 
     const deleteUser = async (u) => {
         const json = {
@@ -100,11 +101,21 @@ const TableUser = () => {
             const userUpdated = users.filter((i) => i._id != u._id);
             setUsers(userUpdated);
             setOpen(false);
+            setSuccessDelete(true);
         } catch (error) {
             console.log(error);
+            setErrorDelete(true);
         }
     }
 
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+        setSuccessDelete(false);
+        setErrorDelete(false);
+    };
     const search = async () => {
         const json = {
             first_name: nameRef.current.value,
@@ -125,9 +136,6 @@ const TableUser = () => {
     const openDialog = () => {
         setOpen(true);
     }
-    const handleClose = () => {
-        setOpen(false);
-    };
     const openModalEdit = (u) => {
         setUserItem(u);
     }
@@ -195,7 +203,7 @@ const TableUser = () => {
                                         {row.last_name}
                                     </TableCell>
                                     <TableCell align="left">{row.first_name}</TableCell>
-                                    <TableCell align="left">{row.gender?'Nữ':'Nam'}</TableCell>
+                                    <TableCell align="left">{row.gender ? 'Nữ' : 'Nam'}</TableCell>
                                     <TableCell align="left">{row.email}</TableCell>
                                     <TableCell align="left"><Switch
                                         checked={row.isVerified}
@@ -241,6 +249,16 @@ const TableUser = () => {
                     </Table>
                 </TableContainer>
             </div>
+            <Snackbar open={successDelete} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Xóa người dùng thành công
+                </Alert>
+            </Snackbar>
+            <Snackbar open={errorDelete} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Xóa người dùng không thành công
+                </Alert>
+            </Snackbar>
         </div>
     )
 }

@@ -11,7 +11,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { pink } from '@mui/material/colors';
 import axios from 'axios';
 import useAuth from '../context/AuthContext';
-import { formatDate, formatDateTime, getTime } from '../services/Format/FormatDateAndTime'
+import {formatDateTime,formatDateTimeMessage } from '../services/Format/FormatDateAndTime'
 import * as API from '../constants/ManageURL'
 
 const Post = ({ post, socket, setPosts, posts }) => {
@@ -94,7 +94,7 @@ const Post = ({ post, socket, setPosts, posts }) => {
                         </div>
                         <div className='col-md-10 mx-2'>
                             <div className='col-md-12'>{post.userId.first_name}</div>
-                            <div className='col-md-12'><small>Vào {formatDateTime(post.createdAt)}</small></div>
+                            <div className='col-md-12'><small>Vào {formatDateTimeMessage(post.createdAt)}</small></div>
                         </div>
                     </div>
                 </div>
