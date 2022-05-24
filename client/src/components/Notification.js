@@ -48,7 +48,7 @@ const Notification = ({ socket,setValue,value,setNewNotifi }) => {
         for (let i = 0; i < notification.receiver.length; i++) {
             if (user._id == notification.receiver[i]._id) {
                 if(notification.type == 'add_friend' || 
-                    notification.type == 'accept_friend' || notification.type == 'add_group' || 
+                    notification.type == 'accept_friend' || 
                     notification.type == 'like'){
                     return `${notification.sender_id.first_name} ${content}`;
                 }else{

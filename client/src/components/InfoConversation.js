@@ -24,8 +24,7 @@ const InfoConversation = ({ selectedConversation, setSelectedConversation,socket
     }
     const getImageConversation = (user,conversation)=>{
         return conversation.member[0]._id===user._id?conversation.member[1].image_url:conversation.member[0].image_url;
-      }
-
+    }
     return (
         <div className='col-lg-12 border rounded'>
             <div className='w-100 d-flex justify-content-between align-items-center'>
