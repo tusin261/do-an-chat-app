@@ -141,7 +141,6 @@ io.on('connection', (socket) => {
     });
     socket.on('like',({ receiverId, data })=>{
         const isOnline = users.find((e)=>e.userId == receiverId);
-        console.log(data);
         if(isOnline){
             socket.to(getUser(receiverId).socketId).emit("new noti like",data);
         }

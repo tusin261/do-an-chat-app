@@ -28,8 +28,9 @@ const TableUser = () => {
     const [userByMonth, setUserByMonth] = useState(0);
     const [open, setOpen] = useState(false);
     const [userItem, setUserItem] = useState(null);
-    const [successDelete,setSuccessDelete] = useState(false);
-    const [errorDelete,setErrorDelete] = useState(false);
+    const [successDelete, setSuccessDelete] = useState(false);
+    const [errorDelete, setErrorDelete] = useState(false);
+    const [rowDelete,setRowDelete] = useState();
     const nameRef = useRef();
     const emailRef = useRef();
 
@@ -89,19 +90,20 @@ const TableUser = () => {
 
 
 
-    const deleteUser = async (u) => {
+    const deleteUser = async () => {
         const json = {
             isLock: false,
             isDelete: true,
             isChange: false,
-            userId: u._id,
+            userId: rowDelete._id,
         }
         try {
             const { data } = await axios.post(`/api/admin/updateUser`, json, config);
-            const userUpdated = users.filter((i) => i._id != u._id);
+            const userUpdated = users.filter((i) => i._id != rowDelete._id);
             setUsers(userUpdated);
             setOpen(false);
             setSuccessDelete(true);
+            setRowDelete(null);
         } catch (error) {
             console.log(error);
             setErrorDelete(true);
@@ -133,8 +135,9 @@ const TableUser = () => {
         setUserItem(null);
     }
 
-    const openDialog = () => {
+    const openDialog = (u) => {
         setOpen(true);
+        setRowDelete(u);
     }
     const openModalEdit = (u) => {
         setUserItem(u);
@@ -180,6 +183,23 @@ const TableUser = () => {
                 </div>
             </div>
             <div className='col-md-12 my-3'>
+                <Dialog
+                    open={open}
+                    onClose={handleClose}
+                    aria-describedby="alert-dialog-slide-description"
+                >
+                    <DialogTitle>{"Xóa người dùng này?"}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-slide-description">
+                            Dữ liệu của người dùng này sẽ không thể khôi phục nếu bạn nhấn
+                            đồng ý.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Hủy</Button>
+                        <Button onClick={deleteUser}>Đồng Ý</Button>
+                    </DialogActions>
+                </Dialog>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="table">
                         <TableHead sx={{ backgroundColor: "orange" }}>
@@ -208,30 +228,14 @@ const TableUser = () => {
                                     <TableCell align="left"><Switch
                                         checked={row.isVerified}
                                         onChange={() => handleChange(row)}
-                                        inputProps={{ 'aria-label': 'controlled' }}
-                                    /></TableCell>
+                                        inputProps={{ 'aria-label': 'controlled' }} /></TableCell>
+
                                     <TableCell align="center">
-                                        <IconButton color="error" onClick={openDialog} >
+                                        <IconButton color="error" onClick={() => openDialog(row)}>
                                             <ClearIcon />
                                         </IconButton>
                                         {/* dialog-------- */}
-                                        <Dialog
-                                            open={open}
-                                            onClose={handleClose}
-                                            aria-describedby="alert-dialog-slide-description"
-                                        >
-                                            <DialogTitle>{"Xóa người dùng này?"}</DialogTitle>
-                                            <DialogContent>
-                                                <DialogContentText id="alert-dialog-slide-description">
-                                                    Dữ liệu của người dùng này sẽ không thể khôi phục nếu bạn nhấn
-                                                    đồng ý.
-                                                </DialogContentText>
-                                            </DialogContent>
-                                            <DialogActions>
-                                                <Button onClick={handleClose}>Hủy</Button>
-                                                <Button onClick={() => deleteUser(row)}>Đồng Ý</Button>
-                                            </DialogActions>
-                                        </Dialog>
+
                                     </TableCell>
                                     <TableCell align="center">
                                         <IconButton color="primary" onClick={() => openModalEdit(row)}>

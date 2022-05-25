@@ -139,7 +139,7 @@ const ModalDetailConversation = ({ showDetailConversation,
     const handleClickItemInList = (item) => {
         const existedMember = listMember.find(i => i._id === item._id);
         const existedMemberinConversation = selectedConversation.member.find(i => i._id === item._id);
-        if (existedMember || existedMemberinConversation) {
+        if (existedMember || existedMemberinConversation || listMember.length < 1) {
             setError(true);
             return;
         } else {

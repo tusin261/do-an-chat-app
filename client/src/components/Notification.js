@@ -4,9 +4,8 @@ import React, { useContext, useEffect,useState } from 'react'
 import { NotificationContext } from '../context/NotificationContext';
 import * as API from '../constants/ManageURL'
 import useAuth from '../context/AuthContext';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
-const Notification = ({ socket,setValue,value,setNewNotifi }) => {
+const Notification = ({setValue,value}) => {
     const { user } = useAuth();
     axios.defaults.baseURL = "http://localhost:5000";
     const config = {
@@ -18,6 +17,7 @@ const Notification = ({ socket,setValue,value,setNewNotifi }) => {
 
     const { notification, notificationDispatch } = useContext(NotificationContext);
     const getListNoti = async () => {
+        console.log('get lis');
         notificationDispatch({ type: 'GET_NOTIFICATION' });
         try {
             const { data } = await axios.get(API.GET_NOTI, config);
@@ -71,30 +71,6 @@ const Notification = ({ socket,setValue,value,setNewNotifi }) => {
 
     useEffect(() => {
         getListNoti();
-    }, []);
-
-    useEffect(() => {
-        socket?.on('notification new group', data => {
-            getListNoti();
-            setNewNotifi(false);
-        })
-        socket?.on('new request friend', data => {
-            console.log(data);
-            getListNoti();
-            setNewNotifi(false);
-        });
-        socket?.on('new request accept friend', data => {
-            console.log(data);
-            getListNoti();
-            setNewNotifi(false);
-        });
-        
-        socket?.on('new noti like', data=>{
-            console.log(data);
-            getListNoti();
-            setNewNotifi(false);
-        })
-
     }, []);
 
     return (
