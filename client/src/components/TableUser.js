@@ -31,6 +31,9 @@ const TableUser = () => {
     const [successDelete, setSuccessDelete] = useState(false);
     const [errorDelete, setErrorDelete] = useState(false);
     const [rowDelete,setRowDelete] = useState();
+    const [isSuccessUpdate,setIsSuccessUpdate] = useState(false);
+    const [successLock, setSuccessLock] = useState(false);
+    const [errorLock, setErrorLock] = useState(false);
     const nameRef = useRef();
     const emailRef = useRef();
 
@@ -45,8 +48,7 @@ const TableUser = () => {
     useEffect(() => {
         getListUser();
         getUserByMonth();
-    }, [])
-
+    }, []);
 
     const getListUser = async () => {
         try {
@@ -82,9 +84,12 @@ const TableUser = () => {
             const { data } = await axios.post(`/api/admin/updateUser`, json, config);
             const userUpdated = users.map(i => i._id == data._id ? { ...i, isVerified: data.isVerified } : i);
             setUsers(userUpdated);
+            setSuccessLock(true);
+            setErrorLock(false);
         } catch (error) {
             console.log(error.response.data.message);
-
+            setErrorLock(true);
+            setSuccessLock(false);
         }
     }
 
@@ -104,6 +109,7 @@ const TableUser = () => {
             setOpen(false);
             setSuccessDelete(true);
             setRowDelete(null);
+            setTotal(total-1);
         } catch (error) {
             console.log(error);
             setErrorDelete(true);
@@ -117,6 +123,9 @@ const TableUser = () => {
         setOpen(false);
         setSuccessDelete(false);
         setErrorDelete(false);
+        setIsSuccessUpdate(false);
+        setErrorLock(false);
+            setSuccessLock(false);
     };
     const search = async () => {
         const json = {
@@ -248,7 +257,7 @@ const TableUser = () => {
                                 onHide={handleCloseModal}
                                 userItem={userItem} users={users}
                                 setUsers={setUsers}
-                                setShow={setShow} />}
+                                setShow={setShow} setIsSuccessUpdate={setIsSuccessUpdate} />}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -259,8 +268,23 @@ const TableUser = () => {
                 </Alert>
             </Snackbar>
             <Snackbar open={errorDelete} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
                     Xóa người dùng không thành công
+                </Alert>
+            </Snackbar>
+            <Snackbar open={isSuccessUpdate} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Cập nhật thông tin người dùng thành công
+                </Alert>
+            </Snackbar>
+            <Snackbar open={errorLock} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                    Khóa tài khoản không thành công
+                </Alert>
+            </Snackbar>
+            <Snackbar open={successLock} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Khóa tài khoản thành công
                 </Alert>
             </Snackbar>
         </div>

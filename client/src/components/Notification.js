@@ -33,7 +33,7 @@ const Notification = ({setValue,value}) => {
     const getType = (notification) => {
         const type = notification.type;
         if (type == 'add_group' || type == 'kick_mem' || type == 'out_group' ||
-            type == 'change_img' || type == 'add_mem') {
+            type == 'change_img' || type == 'add_mem' || type == 'kick_group') {
             return 'Nhóm';
         }else if(type == 'like'){
             return 'Tin';

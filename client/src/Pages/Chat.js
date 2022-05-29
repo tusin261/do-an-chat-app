@@ -43,6 +43,8 @@ const Chat = () => {
   const [online, setOnline] = useState([]);
   const [isError, setIsError] = useState(false);
   const [isNewNoti, setIsNewNoti] = useState(true);
+  const [groupUpdated,setGroupUpdated] = useState(null);
+
   const idConverRef = useRef();
   let selectedChatCompare = useRef();
   const scrollRef = useRef();
@@ -194,7 +196,16 @@ const Chat = () => {
     socket.on('new noti like', data => {
       setIsNewNoti(false);
     });
-
+    socket.on('notification kick member', ({memId,group}) => {
+      setIsNewNoti(false);
+      // setGroupUpdated(group);
+      // console.log('abc kick');
+    });
+    socket.on('notification update group', (group) => {
+      //setIsNewNoti(false);
+      setGroupUpdated(group);
+      // console.log('abc kick');
+    });
   }, []);
 
 
@@ -215,6 +226,7 @@ const Chat = () => {
       setHasMore(true);
       getMessageCurrenConversation();
       selectedChatCompare.current = selectedConversation;
+      setGroupUpdated(null);
     }
   }, [selectedConversation]);
 
@@ -294,7 +306,7 @@ const Chat = () => {
             setSelectedConversation={setSelectedConversation}
             selectedConversation={selectedConversation}
             socket={socket} listImage={listImage} listFile={listFile}
-            setMessages={setMessages} messages={messages} />}
+            setMessages={setMessages} messages={messages} groupUpdated={groupUpdated} />}
           <div className='box-chat border rounded d-flex flex-column-reverse' id='scrollableDiv'>
             {selectedConversation &&
               <InfiniteScroll

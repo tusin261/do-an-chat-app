@@ -16,6 +16,9 @@ module.exports.createNotificationGroup = async (req, res) => {
     if(type == 'add_group'){
         content = `${NotificationType.ADD_GROUP} ${group.chat_name}`;
     }
+    if(type == 'kick_group'){
+        content = `${NotificationType.KICK_MEMBER} ${group.chat_name}`;
+    }
 
     try {
         const member = group.member.filter(i => i._id != req.user.id);

@@ -66,7 +66,7 @@ module.exports.updateUser = async (req,res)=>{
             const user = await user_model.findOneAndDelete({_id:userId});
             return res.status(200).json(user);
         }else if(isChange){
-            const existEmail = await user_model.findOne({ email: email }).findOne({ _id: { $ne: req.user.id } });
+            const existEmail = await user_model.findOne({ email: email }).findOne({ _id: { $ne: userId } });
             if (existEmail) {
                 return res.status(500).json({ message: "Email đã tồn tại", code: 1 });
             }
