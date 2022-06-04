@@ -317,7 +317,7 @@ const ModalDetailConversation = ({ showDetailConversation,
                     {selectedConversation.isGroupChat && <>
                         <div className='row'>
                             <div className="mb-1 px-0">
-                                <label className="form-label">Tên cuộc trò chuyện</label>
+                                <label className="form-label">Tên nhóm</label>
                                 <input type="text" className="form-control" value={groupChatName}
                                     onChange={(e) => setGroupChatName(e.target.value)} />
                                 <div className="input-group-append my-2">
